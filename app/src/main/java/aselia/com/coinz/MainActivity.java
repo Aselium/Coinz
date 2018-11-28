@@ -18,7 +18,7 @@ import android.view.View;
 import android.support.v4.app.Fragment;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, map_fragment.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,15 +26,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -78,28 +69,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void displaySelectedScreen(int id){
-        Fragment fragment = null;
-
-        switch(id){
-            case R.id.Map:
-                fragment = new map_fragment();
-                break;
-            case R.id.Bank:
-                break;
-            case R.id.Coin_Transfer:
-                break;
-        }
-
-        if (fragment != null){
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.content_main, fragment);
-            ft.commit();
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -107,7 +76,25 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        displaySelectedScreen(id);
+        Fragment fragment = null;
+
+        if (id == R.id.Map) {
+            fragment = new map();
+        } else if (id == R.id.Bank) {
+            fragment = new bank();
+        } else if (id == R.id.Coin_Transfer) {
+            fragment = new coin();
+        }
+
+        if (fragment != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            ft.replace(R.id.screen_area, fragment);
+            ft.commit();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
 
         return true;
     }
