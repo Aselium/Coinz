@@ -1,18 +1,34 @@
 package aselia.com.coinz;
 
 import android.content.Context;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mapbox.android.core.location.LocationEngine;
+import com.mapbox.android.core.location.LocationEngineListener;
+import com.mapbox.android.core.location.LocationEnginePriority;
+import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.permissions.PermissionsListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.Style;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
+import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode;
+import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
+
+import java.util.List;
 
 
 /**
@@ -23,7 +39,7 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
  * Use the {@link map#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class map extends Fragment {
+public class map extends Fragment implements OnMapReadyCallback, LocationEngineListener, PermissionsListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -37,6 +53,12 @@ public class map extends Fragment {
 
     private MapView mapView;
     View v;
+
+    private MapboxMap map;
+    private PermissionsManager permissionsManager;
+    private LocationEngine locationEngine;
+    private LocationLayerPlugin locationLayerPlugin;
+    private Location originLocation;
 
     public map() {
         // Required empty public constructor
@@ -81,17 +103,101 @@ public class map extends Fragment {
 
         mapView = (MapView) v.findViewById(R.id.mapview);
         mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
 
+        /*
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
 
             }
         });
+        */
 
         return v;
 
         //return inflater.inflate(R.layout.fragment_map, container, false);
+    }
+
+    @Override
+    public void onMapReady(MapboxMap mapboxMap) {
+        map = mapboxMap;
+        map.getUiSettings().setCompassEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(true);
+
+        enableLocation();
+
+    }
+
+    private void enableLocation(){
+        if (PermissionsManager.areLocationPermissionsGranted(getContext())){
+            initializeLocationEngine();
+            initializeLocationLayer();
+        } else {
+            permissionsManager = new PermissionsManager(this);
+            permissionsManager.requestLocationPermissions(getActivity());
+        }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void initializeLocationEngine(){
+        locationEngine = new LocationEngineProvider(getContext()).obtainBestLocationEngineAvailable();
+        locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
+        locationEngine.setInterval(5000);
+        locationEngine.setFastestInterval(1000);
+        locationEngine.activate();
+
+        Location lastLocation = locationEngine.getLastLocation();
+        if (lastLocation != null){
+            originLocation = lastLocation;
+            setCameraLocation(lastLocation);
+        } else {
+            locationEngine.addLocationEngineListener(this);
+        }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void initializeLocationLayer(){
+        locationLayerPlugin = new LocationLayerPlugin(mapView, map, locationEngine);
+        locationLayerPlugin.setLocationLayerEnabled(true);
+        locationLayerPlugin.setCameraMode(CameraMode.TRACKING);
+        locationLayerPlugin.setRenderMode(RenderMode.NORMAL);
+    }
+
+    private void setCameraLocation(Location location){
+        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        map.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+    }
+
+    @Override
+    @SuppressWarnings("MissingPermission")
+    public void onConnected() {
+        locationEngine.requestLocationUpdates();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null){
+            originLocation = location;
+            setCameraLocation(location);
+        }
+    }
+
+    @Override
+    public void onExplanationNeeded(List<String> permissionsToExplain) {
+        //TODO Present toast or dialog
+    }
+
+    @Override
+    public void onPermissionResult(boolean granted) {
+        if (granted){
+            enableLocation();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionsManager.onRequestPermissionsResult(requestCode,permissions,grantResults);
     }
 
     /*
@@ -110,8 +216,15 @@ public class map extends Fragment {
     }*/
 
     @Override
+    @SuppressWarnings("MissingPermission")
     public void onStart(){
         super.onStart();
+        if (locationEngine != null){
+            locationEngine.requestLocationUpdates();
+        }
+        if (locationLayerPlugin != null){
+            locationLayerPlugin.onStart();
+        }
         mapView.onStart();
     }
 
@@ -130,6 +243,12 @@ public class map extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        if (locationEngine != null){
+            locationEngine.removeLocationUpdates();
+        }
+        if (locationLayerPlugin != null){
+            locationLayerPlugin.onStop();
+        }
         mapView.onStop();
     }
 
@@ -141,7 +260,10 @@ public class map extends Fragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroy();
+        super.onDestroyView();
+        if (locationEngine != null){
+            locationEngine.deactivate();
+        }
         mapView.onDestroy();
     }
 
