@@ -1,6 +1,9 @@
 package aselia.com.coinz;
 
+import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -12,10 +15,19 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.support.v4.app.Fragment;
+
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener {
@@ -35,6 +47,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        DownloadFileTask dl = new DownloadFileTask();
+        dl.execute("http://homepages.inf.ed.ac.uk/stg/coinz/2018/10/03/coinzmap.geojson");
+
     }
 
     @Override
@@ -82,6 +98,12 @@ public class MainActivity extends AppCompatActivity
             fragment = new map();
         } else if (id == R.id.Bank) {
             fragment = new bank();
+            try{
+                String test = openFileInput("data").toString();
+                Log.i("output!!",test);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else if (id == R.id.Coin_Transfer) {
             fragment = new coin();
         }
@@ -99,6 +121,59 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    public class DownloadFileTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try{
+                return loadFileFromNetwork(urls[0]);
+            } catch (IOException e){
+                return "Unable to load content. Check your network connection";
+            }
+        }
+
+        private String loadFileFromNetwork(String urlString) throws IOException {
+            return readStream(downloadUrl(new URL(urlString)));
+        }
+
+        private InputStream downloadUrl(URL url) throws IOException {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000); // milliseconds
+            conn.setConnectTimeout(15000); // milliseconds
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            conn.connect();
+            return conn.getInputStream();
+        }
+
+        @NonNull
+        private String readStream(InputStream stream) throws IOException{
+            BufferedReader r = new BufferedReader(new InputStreamReader(stream));
+            StringBuilder total = new StringBuilder();
+            for (String line; (line = r.readLine()) != null;) {
+                total.append(line).append('\n');
+            }
+            return total.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+            FileOutputStream outputStream;
+            super.onPostExecute(result);
+            DownloadCompleteRunner.downloadComplete(result);
+            try{
+                outputStream = openFileOutput("data", Context.MODE_PRIVATE);
+                outputStream.write(result.getBytes());
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
+    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void onFragmentInteraction(Uri uri) {
 
