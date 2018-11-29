@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity
             fragment = new bank();
             try{
                 String test = openFileInput("data").toString();
-                Log.i("output!!",test);
             } catch (Exception e) {
                 e.printStackTrace();
             }
