@@ -7,9 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
@@ -31,14 +33,6 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
 import java.util.List;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link map.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link map#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class map extends Fragment implements OnMapReadyCallback, LocationEngineListener, PermissionsListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -89,15 +83,13 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-        //Mapbox.getInstance(getActivity(), getString(R.string.access_token));
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
+        // Apply key to mapbox
         Mapbox.getInstance(getContext(),getString(R.string.access_token));
         v = inflater.inflate(R.layout.fragment_map, container, false);
 
@@ -105,18 +97,8 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
-        /*
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-
-            }
-        });
-        */
-
         return v;
 
-        //return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
     @Override
@@ -180,12 +162,13 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         if (location != null){
             originLocation = location;
             setCameraLocation(location);
+            //Log.i("LC11","Location Changed");
         }
     }
 
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
-        //TODO Present toast or dialog
+        Toast.makeText(getContext(),"Location Permissions is required for this App.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -273,12 +256,14 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView.onSaveInstanceState(outState);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+    /*
+    // ??
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
     }
+    */
 
     @Override
     public void onAttach(Context context) {
@@ -308,7 +293,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
+        //Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 }
