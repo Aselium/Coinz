@@ -22,6 +22,7 @@ import android.view.View;
 import android.support.v4.app.Fragment;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,11 +99,6 @@ public class MainActivity extends AppCompatActivity
             fragment = new map();
         } else if (id == R.id.Bank) {
             fragment = new bank();
-            try{
-                String test = openFileInput("data").toString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         } else if (id == R.id.Coin_Transfer) {
             fragment = new coin();
         }
@@ -161,7 +157,7 @@ public class MainActivity extends AppCompatActivity
             super.onPostExecute(result);
             DownloadCompleteRunner.downloadComplete(result);
             try{
-                outputStream = openFileOutput("data", Context.MODE_PRIVATE);
+                outputStream = openFileOutput("data.geojson", Context.MODE_PRIVATE);
                 outputStream.write(result.getBytes());
                 outputStream.close();
             } catch (Exception e) {

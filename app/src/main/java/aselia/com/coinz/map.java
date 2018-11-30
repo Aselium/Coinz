@@ -5,7 +5,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,9 +18,12 @@ import com.mapbox.android.core.location.LocationEnginePriority;
 import com.mapbox.android.core.location.LocationEngineProvider;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -30,7 +32,17 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode;
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 
 public class map extends Fragment implements OnMapReadyCallback, LocationEngineListener, PermissionsListener {
@@ -53,6 +65,13 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     private LocationEngine locationEngine;
     private LocationLayerPlugin locationLayerPlugin;
     private Location originLocation;
+
+    private List<String> currentCollected;
+    private String jsonString;
+    private HashMap<String, LatLng> mapping;
+    private FeatureCollection featureCollection;
+
+    private List<Feature> features;
 
     public map() {
         // Required empty public constructor
@@ -109,6 +128,13 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
 
         enableLocation();
 
+        jsonString = loadFile(getContext(),"data.geojson");
+        featureCollection = FeatureCollection.fromJson(jsonString);
+        features = featureCollection.features();
+
+        checkCollected(getContext(), features, jsonString);
+        mapping = generateHmap(featureCollection);
+        setMarkers(features);
     }
 
     private void enableLocation(){
@@ -162,7 +188,23 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         if (location != null){
             originLocation = location;
             setCameraLocation(location);
-            //Log.i("LC11","Location Changed");
+            LatLng coordinates = new LatLng(location.getLatitude(),location.getLongitude());
+
+            Set set = mapping.entrySet();
+            Iterator it = set.iterator();
+            while(it.hasNext()){
+                HashMap.Entry<String,LatLng> pair = (HashMap.Entry<String,LatLng>) it.next();
+                double distance = coordinates.distanceTo(pair.getValue());
+                if (distance < 25){
+                    currentCollected.remove(pair.getKey());
+                    Toast.makeText(getContext(), "Coin Collected", Toast.LENGTH_SHORT).show();
+                }
+            }
+            saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
+            checkCollected(getContext(), features,jsonString);
+            mapping = generateHmap(featureCollection);
+            map.removeAnnotations();
+            setMarkers(features);
         }
     }
 
@@ -182,21 +224,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         permissionsManager.onRequestPermissionsResult(requestCode,permissions,grantResults);
     }
-
-    /*
-    public void onViewcreated(View view, @Nullable Bundle savedInstanceState){
-        super.onViewCreated(view, savedInstanceState);
-
-        mapView = (MapView) v.findViewById(R.id.mapview);
-        mapView.onCreate(savedInstanceState);
-
-        mapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-
-            }
-        });
-    }*/
 
     @Override
     @SuppressWarnings("MissingPermission")
@@ -220,6 +247,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     @Override
     public void onPause() {
         super.onPause();
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
         mapView.onPause();
     }
 
@@ -232,12 +260,14 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         if (locationLayerPlugin != null){
             locationLayerPlugin.onStop();
         }
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
         mapView.onStop();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
         mapView.onLowMemory();
     }
 
@@ -247,12 +277,17 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         if (locationEngine != null){
             locationEngine.deactivate();
         }
+        if (locationLayerPlugin != null){
+            locationLayerPlugin.onStop();
+        }
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
         mapView.onDestroy();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
         mapView.onSaveInstanceState(outState);
     }
 
@@ -280,6 +315,125 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    private String loadFile(Context context, String filename) {
+
+        String output = "";
+
+        try {
+            InputStream inputStream = getContext().openFileInput(filename);
+            int size = inputStream.available();
+            byte[] buffer = new byte[size];
+            inputStream.read(buffer);
+            inputStream.close();
+
+            output = new String(buffer);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return output;
+    }
+
+    private void saveFile(Context context, String filename, String data){
+        try{
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(filename, Context.MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private String rebuildCollected(List<String> current, String json){
+        String result = "";
+        result += getDate(json);
+        result += "\n";
+        for (String element : current){
+            result += element;
+            result += "\n";
+        }
+        return result;
+    }
+
+    private void checkCollected(Context context, List<Feature> features, String jsonString){
+        File file = context.getFileStreamPath("Collected");
+        Log.i("checkexists","checkexists");
+        if(file != null || file.exists()){
+            currentCollected = new LinkedList<String>(Arrays.asList(loadFile(getContext(),"Collected").split("\n")));
+            if (!currentCollected.contains(getDate(jsonString))){
+                String newCollected = "";
+                newCollected += getDate(jsonString);
+                newCollected += "\n";
+                for (Feature f : features){
+                    if (f.geometry() instanceof Point){
+                        newCollected += f.getStringProperty("id");
+                        newCollected += "\n";
+                    }
+                }
+                saveFile(getContext(),"Collected",newCollected);
+                currentCollected = new LinkedList<String>(Arrays.asList(newCollected.split("\n")));
+            }
+        } else {
+            String newCollected = "";
+            newCollected += getDate(jsonString);
+            newCollected += "\n";
+            for (Feature f : features){
+                if (f.geometry() instanceof Point){
+                    newCollected += f.getStringProperty("id");
+                    newCollected += "\n";
+                }
+            }
+            saveFile(getContext(),"Collected",newCollected);
+            currentCollected = new LinkedList<String>(Arrays.asList(newCollected.split("\n")));
+        }
+    }
+
+    private String getDate(String jsonString){
+        String date = "";
+        int dateIndex = jsonString.indexOf("date-generated") + 18;
+        boolean check = false;
+        int counter = 0;
+        while (check == false){
+            date += jsonString.charAt(dateIndex+counter);
+            counter += 1;
+            if (jsonString.charAt(dateIndex+counter) == '"'){
+                check = true;
+            }
+        }
+        return date;
+    }
+
+    private HashMap<String, LatLng> generateHmap(FeatureCollection featureCollection){
+        HashMap<String, LatLng> hmap = new HashMap<String, LatLng>();
+
+        List<Feature> features = featureCollection.features();
+        for (Feature f : features){
+            if (f.geometry() instanceof Point && currentCollected.contains(f.getStringProperty("id"))){
+                Point p = (Point) f.geometry();
+                hmap.put(f.getStringProperty("id"),new LatLng(p.latitude(),p.longitude()));
+            }
+        }
+
+        return hmap;
+    }
+
+    private void setMarkers(List<Feature> features){
+        for (Feature f : features){
+            if(f.geometry() instanceof Point &&
+                    currentCollected.contains(f.getStringProperty("id"))){
+                Point p = (Point) f.geometry();
+
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(new LatLng(p.latitude(),p.longitude()))
+                        .title(f.getStringProperty("value"))
+                        .snippet(f.getStringProperty("currency"));
+                map.addMarker(markerOptions);
+            }
+        }
     }
 
     /**
