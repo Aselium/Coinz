@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.support.v4.app.Fragment;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        mAuth = FirebaseAuth.getInstance();
 
         Button loginButton = findViewById(R.id.buttonLogin);
         Button signUpButton = findViewById(R.id.buttonSignup);
@@ -124,31 +126,39 @@ public class MainActivity extends AppCompatActivity
         EditText passwordedit = findViewById(R.id.editTextPass);
         //Fragment fragment = null;
 
-        if (id == R.id.Map) {
-            fragment = new map();
-            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-        } else if (id == R.id.Bank) {
-            fragment = new bank();
-            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-        } else if (id == R.id.Coin_Transfer) {
-            fragment = new coin();
-            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-        } else if (id == R.id.Menu) {
-            if (fragment != null){
+        if (mAuth.getInstance().getCurrentUser() != null){
+            if (id == R.id.Map) {
+                fragment = new map();
+                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            } else if (id == R.id.Bank) {
+                fragment = new bank();
+                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            } else if (id == R.id.Coin_Transfer) {
+                fragment = new coin();
+                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            } else if (id == R.id.Menu) {
+                if (fragment != null){
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction ft = fragmentManager.beginTransaction();
+                    ft.remove(fragment);
+                    ft.commit();
+                    showUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+                    mAuth.signOut();
+                    Toast.makeText(this, "You have signed out", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            if (fragment != null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction ft = fragmentManager.beginTransaction();
-                ft.remove(fragment);
+                ft.replace(R.id.screen_area, fragment);
                 ft.commit();
-                showUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             }
+        } else {
+            Toast.makeText(this, "Please sign in first", Toast.LENGTH_SHORT).show();
         }
 
-        if (fragment != null) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.replace(R.id.screen_area, fragment);
-            ft.commit();
-        }
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -175,8 +185,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void tryLogin(View view) {
+        Button loginButton = findViewById(R.id.buttonLogin);
+        Button signUpButton = findViewById(R.id.buttonSignup);
+        View colourBox = findViewById(R.id.colored_bar);
+        TextView loginText = findViewById(R.id.textLogin);
         EditText emailedit = findViewById(R.id.editTextUser);
         EditText passwordedit = findViewById(R.id.editTextPass);
+
         mAuth = FirebaseAuth.getInstance();
 
         String email = emailedit.getText().toString();
@@ -190,7 +205,17 @@ public class MainActivity extends AppCompatActivity
                             if (task.isSuccessful()){
                                 Log.d("UserLoggedIn", "LogUserWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                //TODO Switch to map
+                                fragment = new map();
+                                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+                                FragmentManager fragmentManager = getSupportFragmentManager();
+                                FragmentTransaction ft = fragmentManager.beginTransaction();
+                                ft.replace(R.id.screen_area, fragment);
+                                ft.commit();
+                                View view = getCurrentFocus();
+                                if (view != null) {
+                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                }
                             } else {
                                 Log.w("SignInFailed", "LogUserWithEmail:failure", task.getException());
                                 if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
@@ -208,8 +233,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void signUp(View view) {
+        Button loginButton = findViewById(R.id.buttonLogin);
+        Button signUpButton = findViewById(R.id.buttonSignup);
+        View colourBox = findViewById(R.id.colored_bar);
+        TextView loginText = findViewById(R.id.textLogin);
         EditText emailedit = findViewById(R.id.editTextUser);
         EditText passwordedit = findViewById(R.id.editTextPass);
+
         mAuth = FirebaseAuth.getInstance();
 
         String email = emailedit.getText().toString();
@@ -223,7 +253,17 @@ public class MainActivity extends AppCompatActivity
                             if (task.isSuccessful()){
                                 Log.d("UserCreated", "createUserWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                //TODO Switch to map
+                                fragment = new map();
+                                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+                                FragmentManager fragmentManager = getSupportFragmentManager();
+                                FragmentTransaction ft = fragmentManager.beginTransaction();
+                                ft.replace(R.id.screen_area, fragment);
+                                ft.commit();
+                                View view = getCurrentFocus();
+                                if (view != null) {
+                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                }
                             } else {
                                 Log.w("UserCreationFailed", "createUserWithEmail:failure", task.getException());
                                 if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
