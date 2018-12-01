@@ -23,9 +23,15 @@ import android.support.v4.app.Fragment;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.w3c.dom.Text;
 
@@ -43,6 +49,8 @@ public class MainActivity extends AppCompatActivity
 
     Fragment fragment = null;
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +115,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+
         Button loginButton = findViewById(R.id.buttonLogin);
         Button signUpButton = findViewById(R.id.buttonSignup);
         View colourBox = findViewById(R.id.colored_bar);
@@ -166,11 +175,70 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void tryLogin(View view) {
-        //TODO LOGIN
+        EditText emailedit = findViewById(R.id.editTextUser);
+        EditText passwordedit = findViewById(R.id.editTextPass);
+        mAuth = FirebaseAuth.getInstance();
+
+        String email = emailedit.getText().toString();
+        String password = passwordedit.getText().toString();
+
+        if (password.length() > 5 && password != null && email != null){
+            mAuth.signInWithEmailAndPassword(email,password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()){
+                                Log.d("UserLoggedIn", "LogUserWithEmail:success");
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                //TODO Switch to map
+                            } else {
+                                Log.w("SignInFailed", "LogUserWithEmail:failure", task.getException());
+                                if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
+                                    Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getBaseContext(),"Authentication Failed", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+                    });
+        } else {
+            Log.i("entered11","enter");
+            Toast.makeText(getBaseContext(), "Check an email is entered and the password at least 6 characters long", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void signUp(View view) {
-        //TODO SIGN UP
+        EditText emailedit = findViewById(R.id.editTextUser);
+        EditText passwordedit = findViewById(R.id.editTextPass);
+        mAuth = FirebaseAuth.getInstance();
+
+        String email = emailedit.getText().toString();
+        String password = passwordedit.getText().toString();
+
+        if (password.length() > 5 && password != null && email != null){
+            mAuth.createUserWithEmailAndPassword(email,password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()){
+                                Log.d("UserCreated", "createUserWithEmail:success");
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                //TODO Switch to map
+                            } else {
+                                Log.w("UserCreationFailed", "createUserWithEmail:failure", task.getException());
+                                if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
+                                    Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getBaseContext(),"Account creation failed", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+                    });
+        } else {
+            Log.i("entered11","enter");
+            Toast.makeText(getBaseContext(), "Check an email is entered and the password at least 6 characters long", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public class DownloadFileTask extends AsyncTask<String, Void, String> {
