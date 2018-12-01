@@ -1,5 +1,6 @@
 package aselia.com.coinz;
 
+import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.location.Location;
 import android.net.Uri;
@@ -170,6 +171,8 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         locationLayerPlugin.setLocationLayerEnabled(true);
         locationLayerPlugin.setCameraMode(CameraMode.TRACKING);
         locationLayerPlugin.setRenderMode(RenderMode.NORMAL);
+        Lifecycle lifecycle = getLifecycle();
+        lifecycle.addObserver(locationLayerPlugin);
     }
 
     private void setCameraLocation(Location location){
@@ -230,7 +233,10 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     public void onStart(){
         super.onStart();
         if (locationEngine != null){
-            locationEngine.requestLocationUpdates();
+            try {
+                locationEngine.requestLocationUpdates();
+            } catch(SecurityException ignored) {}
+            locationEngine.addLocationEngineListener(this);
         }
         if (locationLayerPlugin != null){
             locationLayerPlugin.onStart();
@@ -239,29 +245,52 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     }
 
     @Override
+    @SuppressWarnings("MissingPermission")
     public void onResume(){
         super.onResume();
+        if (locationEngine != null){
+            try {
+                locationEngine.requestLocationUpdates();
+            } catch(SecurityException ignored) {}
+            locationEngine.addLocationEngineListener(this);
+        }
+        if (locationLayerPlugin != null){
+            if (PermissionsManager.areLocationPermissionsGranted(getContext())){
+                locationLayerPlugin.onStart();
+            } else {
+                permissionsManager = new PermissionsManager(this);
+                permissionsManager.requestLocationPermissions(getActivity());
+            }
+        }
         mapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
-        mapView.onPause();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (locationEngine != null){
+        if(locationEngine != null){
+            locationEngine.removeLocationEngineListener(this);
             locationEngine.removeLocationUpdates();
         }
         if (locationLayerPlugin != null){
             locationLayerPlugin.onStop();
         }
         saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
+        mapView.onPause();
+    }
+
+    @Override
+    public void onStop() {
         mapView.onStop();
+        super.onStop();
+        if(locationEngine != null){
+            locationEngine.removeLocationEngineListener(this);
+            locationEngine.removeLocationUpdates();
+        }
+        if (locationLayerPlugin != null){
+            locationLayerPlugin.onStop();
+        }
+        saveFile(getContext(),"Collected",rebuildCollected(currentCollected,jsonString));
     }
 
     @Override
@@ -274,8 +303,9 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (locationEngine != null){
-            locationEngine.deactivate();
+        if(locationEngine != null){
+            locationEngine.removeLocationEngineListener(this);
+            locationEngine.removeLocationUpdates();
         }
         if (locationLayerPlugin != null){
             locationLayerPlugin.onStop();
