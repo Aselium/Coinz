@@ -8,9 +8,67 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/screen_area"
-        android:layout_width = "match_parent"
-        android:layout_height = "match_parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <View
+            android:id="@+id/colored_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50sp"
+            android:background="@color/login" />
+
+
+        <TextView
+            android:id="@+id/textLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15sp"
+            android:text="@string/LoginMsg"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title" />
+
+        <EditText
+            android:id="@+id/editTextUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/colored_bar"
+            android:ems="10"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:textAlignment="center"
+            />
+
+        <EditText
+            android:id="@+id/editTextPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editTextUser"
+            android:layout_centerHorizontal="true"
+            android:ems="10"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/buttonLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editTextPass"
+            android:layout_centerHorizontal="true"
+            android:text="@string/Login"
+            android:onClick="tryLogin"/>
+
+        <Button
+            android:id="@+id/buttonSignup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonLogin"
+            android:layout_marginTop="15sp"
+            android:layout_centerHorizontal="true"
+            android:text="@string/Sign_up"
+            android:onClick="signUp"/>
+    </RelativeLayout>
 
 </RelativeLayout>

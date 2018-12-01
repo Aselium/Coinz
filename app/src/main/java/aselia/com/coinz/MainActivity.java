@@ -20,6 +20,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.support.v4.app.Fragment;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -32,6 +40,9 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener {
+
+    Fragment fragment = null;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +63,10 @@ public class MainActivity extends AppCompatActivity
         DownloadFileTask dl = new DownloadFileTask();
         dl.execute("http://homepages.inf.ed.ac.uk/stg/coinz/2018/10/03/coinzmap.geojson");
 
+        FirebaseApp.initializeApp(this);
+        FirebaseAuth mAuth;
+        mAuth = FirebaseAuth.getInstance();
+
     }
 
     @Override
@@ -67,10 +82,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
+    /*
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -84,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -92,15 +107,31 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        Fragment fragment = null;
+        Button loginButton = findViewById(R.id.buttonLogin);
+        Button signUpButton = findViewById(R.id.buttonSignup);
+        View colourBox = findViewById(R.id.colored_bar);
+        TextView loginText = findViewById(R.id.textLogin);
+        EditText emailedit = findViewById(R.id.editTextUser);
+        EditText passwordedit = findViewById(R.id.editTextPass);
+        //Fragment fragment = null;
 
         if (id == R.id.Map) {
             fragment = new map();
+            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
         } else if (id == R.id.Bank) {
             fragment = new bank();
+            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
         } else if (id == R.id.Coin_Transfer) {
             fragment = new coin();
+            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+        } else if (id == R.id.Menu) {
+            if (fragment != null){
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                ft.remove(fragment);
+                ft.commit();
+                showUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            }
         }
 
         if (fragment != null) {
@@ -114,6 +145,32 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
 
         return true;
+    }
+
+    public void hideUI(Button loginButton, Button signUpButton, View colourBox, TextView loginText, EditText emailedit, EditText passwordedit){
+        loginButton.setVisibility(View.GONE);
+        signUpButton.setVisibility(View.GONE);
+        colourBox.setVisibility(View.GONE);
+        loginText.setVisibility(View.GONE);
+        emailedit.setVisibility(View.GONE);
+        passwordedit.setVisibility(View.GONE);
+    }
+
+    public void showUI(Button loginButton, Button signUpButton, View colourBox, TextView loginText, EditText emailedit, EditText passwordedit){
+        loginButton.setVisibility(View.VISIBLE);
+        signUpButton.setVisibility(View.VISIBLE);
+        colourBox.setVisibility(View.VISIBLE);
+        loginText.setVisibility(View.VISIBLE);
+        emailedit.setVisibility(View.VISIBLE);
+        passwordedit.setVisibility(View.VISIBLE);
+    }
+
+    public void tryLogin(View view) {
+        //TODO LOGIN
+    }
+
+    public void signUp(View view) {
+        //TODO SIGN UP
     }
 
     public class DownloadFileTask extends AsyncTask<String, Void, String> {
