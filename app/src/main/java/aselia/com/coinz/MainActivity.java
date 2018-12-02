@@ -254,8 +254,9 @@ public class MainActivity extends AppCompatActivity
                                 FirebaseFirestore db = FirebaseFirestore.getInstance();
 
                                 DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
-                                Map<String,Double> userInfo = new HashMap<>();
+                                Map<String,Object> userInfo = new HashMap<>();
                                 userInfo.put("Money",0.0);
+                                userInfo.put("Traded", 0);
                                 docRef.set(userInfo);
 
                                 docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());
