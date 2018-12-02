@@ -16,10 +16,11 @@
             android:id="@+id/Coin_Transfer"
             android:icon="@drawable/ic_menu_coin_transfer"
             android:title="@string/coin_transfer" />
+        <!--
         <item
             android:id="@+id/Menu"
             android:icon="@drawable/ic_menu"
-            android:title="@string/menu"/>
+            android:title="@string/menu"/> -->
     </group>
 
 </menu>

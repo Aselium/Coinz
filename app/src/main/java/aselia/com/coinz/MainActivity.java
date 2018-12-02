@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity
             } else if (id == R.id.Coin_Transfer) {
                 fragment = new coin();
                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-            } else if (id == R.id.Menu) {
+            }/* else if (id == R.id.Menu) {
                 if (fragment != null){
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity
                     mAuth.signOut();
                     Toast.makeText(this, "You have signed out", Toast.LENGTH_SHORT).show();
                 }
-            }
+            }*/
 
             if (fragment != null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
