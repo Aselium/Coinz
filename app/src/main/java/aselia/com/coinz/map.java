@@ -71,7 +71,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     private LocationLayerPlugin locationLayerPlugin;
     private Location originLocation;
 
-    private List<String> currentCollected;
+    private Map<String,Object> currentCollected = new HashMap<>();
     private String jsonString;
     private FeatureCollection featureCollection;
     private Map<String, String> coinData = new HashMap<>();
@@ -141,8 +141,8 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser().getUid();
-        DocumentReference docRef = db.collection("dateData").document(mAuth.getCurrentUser().getUid());
 
+        DocumentReference docRef = db.collection("dateData").document(currentUser);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -163,6 +163,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                 }
             }
         });
+        loadCollectData();
         db = null;
         mAuth = null;
     }
@@ -234,10 +235,23 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                     Toast.makeText(getContext(), "Coin Collected", Toast.LENGTH_SHORT).show();
                 }
             }
-            Iterator<String> removeIT = toRemove.iterator();
-            while (removeIT.hasNext()){
-                coinData.remove(removeIT.next());
+
+            for (String rmv : toRemove){
+                for (Feature f : features){
+                    if (f.getStringProperty("id") == rmv){
+                        Object values = currentCollected.get(f.getStringProperty("currency"));
+                        if (values == null){
+                            values = f.getStringProperty("value");
+                        } else {
+                            values += "," + f.getStringProperty("value");
+                        }
+
+                        currentCollected.put(f.getStringProperty("currency"), values);
+                    }
+                }
+                coinData.remove(rmv);
             }
+
             map.removeAnnotations();
             setMarkers(features);
         }
@@ -316,6 +330,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         super.onStop();
         mapView.onStop();
         saveCoinData();
+        saveCollectData();
         if(locationEngine != null){
             locationEngine.removeLocationEngineListener(this);
             locationEngine.removeLocationUpdates();
@@ -337,6 +352,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         super.onDestroyView();
         mapView.onDestroy();
         saveCoinData();
+        saveCollectData();
         if(locationEngine != null){
             locationEngine.removeLocationEngineListener(this);
             locationEngine.removeLocationUpdates();
@@ -411,19 +427,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         return date;
     }
 
-    private HashMap<String, LatLng> generateHmap(FeatureCollection featureCollection){
-        HashMap<String, LatLng> hmap = new HashMap<String, LatLng>();
-
-        List<Feature> features = featureCollection.features();
-        for (Feature f : features){
-            if (f.geometry() instanceof Point && currentCollected.contains(f.getStringProperty("id"))){
-                Point p = (Point) f.geometry();
-                hmap.put(f.getStringProperty("id"),new LatLng(p.latitude(),p.longitude()));
-            }
-        }
-
-        return hmap;
-    }
 
     private Map<String, String> generateCoinData(FeatureCollection featureCollection){
         Map<String, String> coinData = new HashMap<String,String>();
@@ -471,9 +474,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                 if (task.isSuccessful()){
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()){
-                        Log.d("LOADINFODOCUMENTEXAMPLE", "DocumentSnapshot data: " + document.getData());
-                        Map<String, Object> temp = document.getData();
-                        Log.i("LOADINFODOCUMENTMAP","info: "+ document);
                         coinData = new HashMap<>();
                         for (Feature f : features){
                             if (document.get(f.getStringProperty("id")) != null){
@@ -499,6 +499,33 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("coinData").document(currentUser);
         docRef.set(coinData);
+        db = null;
+    }
+
+    private void loadCollectData(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("collectData").document(currentUser);
+
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()){
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()){
+                        currentCollected = new HashMap<>();
+                        currentCollected = document.getData();
+                    }
+                }
+            }
+        });
+        db = null;
+    }
+
+    private void saveCollectData(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("collectData").document(currentUser);
+        docRef.set(currentCollected);
+        Log.i("currentCollectedInfo","info: " + currentCollected);
         db = null;
     }
 

@@ -33,6 +33,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.w3c.dom.Text;
 
@@ -44,6 +46,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener {
@@ -245,6 +251,25 @@ public class MainActivity extends AppCompatActivity
                             if (task.isSuccessful()){
                                 Log.d("UserCreated", "createUserWithEmail:success");
                                 FirebaseUser user = mAuth.getCurrentUser();
+                                FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                                DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
+                                Map<String,Double> userInfo = new HashMap<>();
+                                userInfo.put("Money",0.0);
+                                userInfo.put("PENY",0.0);
+                                userInfo.put("DOLR",0.0);
+                                userInfo.put("SHIL",0.0);
+                                userInfo.put("QUID",0.0);
+                                docRef.set(userInfo);
+
+                                docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());
+                                Map<String, String> collectInfo = new HashMap<>();
+                                collectInfo.put("PENY",null);
+                                collectInfo.put("DOLR",null);
+                                collectInfo.put("SHIL",null);
+                                collectInfo.put("QUID",null);
+                                docRef.set(collectInfo);
+
                                 fragment = new map();
                                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
                                 FragmentManager fragmentManager = getSupportFragmentManager();
