@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -16,6 +17,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.w3c.dom.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -106,7 +109,6 @@ public class bank extends Fragment {
                 } else {
                     Log.d("LoadUserData", "get failed with ", task.getException());
                 }
-                Log.i("TEST11", "data = " + money + todaysCoins + dolrRate);
             }
         });
     }
@@ -115,7 +117,25 @@ public class bank extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bank, container, false);
+        View view = inflater.inflate(R.layout.fragment_bank, container, false);
+
+        TextView textDate = view.findViewById(R.id.textDate);
+        TextView textMoney = view.findViewById(R.id.textMoney);
+        TextView textTraded = view.findViewById(R.id.textTraded);
+        TextView textDOLR = view.findViewById(R.id.textDOLRrate);
+        TextView textPENY = view.findViewById(R.id.textPENYrate);
+        TextView textSHIL = view.findViewById(R.id.textSHILrate);
+        TextView textQUID = view.findViewById(R.id.textQUIDrate);
+
+        textDate.setText(getDate(jsonString));
+        textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
+        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins));
+        textDOLR.setText("DOLR: " + Double.toString(dolrRate).substring(0, Math.min(Double.toString(dolrRate).length(), 8)));
+        textPENY.setText("PENY: " + Double.toString(penyRate).substring(0, Math.min(Double.toString(penyRate).length(), 8)));
+        textSHIL.setText("SHIL: " + Double.toString(shilRate).substring(0, Math.min(Double.toString(shilRate).length(), 8)));
+        textQUID.setText("QUID: " + Double.toString(quidRate).substring(0, Math.min(Double.toString(quidRate).length(), 8)));
+
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
