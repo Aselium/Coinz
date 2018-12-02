@@ -256,10 +256,6 @@ public class MainActivity extends AppCompatActivity
                                 DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
                                 Map<String,Double> userInfo = new HashMap<>();
                                 userInfo.put("Money",0.0);
-                                userInfo.put("PENY",0.0);
-                                userInfo.put("DOLR",0.0);
-                                userInfo.put("SHIL",0.0);
-                                userInfo.put("QUID",0.0);
                                 docRef.set(userInfo);
 
                                 docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());

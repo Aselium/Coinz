@@ -142,7 +142,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser().getUid();
 
-        DocumentReference docRef = db.collection("dateData").document(currentUser);
+        DocumentReference docRef = db.collection("userData").document(currentUser);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -152,14 +152,14 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                         loadCoinData();
                     } else {
                         coinData = generateCoinData(featureCollection);
-                        Map<String, String> currentDate = new HashMap<>();
+                        Map<String, Object> currentDate = new HashMap<>();
                         currentDate.put("date",getDate(jsonString));
-                        docRef.set(currentDate);
+                        docRef.update(currentDate);
                         setMarkers(features);
                         saveCoinData();
                     }
                 } else {
-                    Log.d("dateData load Failed", "get failed with", task.getException());
+                    Log.d("userData load Failed", "get failed with", task.getException());
                 }
             }
         });
@@ -525,7 +525,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("collectData").document(currentUser);
         docRef.set(currentCollected);
-        Log.i("currentCollectedInfo","info: " + currentCollected);
         db = null;
     }
 
