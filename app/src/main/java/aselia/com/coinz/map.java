@@ -39,16 +39,12 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode;
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,7 +73,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
 
     private List<String> currentCollected;
     private String jsonString;
-    //private HashMap<String, LatLng> mapping;
     private FeatureCollection featureCollection;
     private Map<String, String> coinData = new HashMap<>();
 
@@ -142,9 +137,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         jsonString = loadFile(getContext(),"data.geojson");
         featureCollection = FeatureCollection.fromJson(jsonString);
         features = featureCollection.features();
-
-        //checkCollected(getContext(), features, jsonString);
-        //mapping = generateHmap(featureCollection);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -246,7 +238,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             while (removeIT.hasNext()){
                 coinData.remove(removeIT.next());
             }
-            //saveCoinData();
             map.removeAnnotations();
             setMarkers(features);
         }
@@ -280,9 +271,9 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             } catch(SecurityException ignored) {}
             locationEngine.addLocationEngineListener(this);
         }
-        //if (locationLayerPlugin != null){
-        //    locationLayerPlugin.onStart();
-        //}
+        if (locationLayerPlugin != null){
+            locationLayerPlugin.onStart();
+        }
     }
 
     @Override
@@ -442,15 +433,12 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             if (f.geometry() instanceof Point){
                 Point p = (Point) f.geometry();
                 coinData.put(f.getStringProperty("id"), latLngToString(new LatLng(p.latitude(),p.longitude())));
-                //Log.i("DATAINFOID", f.getStringProperty("id"));
-                //Log.i("DATAINFOLAT", latLngToString(new LatLng(p.latitude(),p.longitude())));
             }
         }
         return coinData;
     }
 
     private String latLngToString(LatLng latLng){
-        //Log.i("DATACONVERT",String.valueOf(latLng.getLatitude()) + "," + String.valueOf(latLng.getLongitude()));
         return String.valueOf(latLng.getLatitude()) + "," + String.valueOf(latLng.getLongitude());
     }
 
@@ -460,7 +448,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     }
 
     private void setMarkers(List<Feature> features){
-        //Log.i("COINDATAINFO",coinData.toString());
         for (Feature f : features){
             if(f.geometry() instanceof Point && coinData.containsKey(f.getStringProperty("id"))){
                 Point p = (Point) f.geometry();
