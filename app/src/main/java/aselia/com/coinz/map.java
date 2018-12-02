@@ -365,14 +365,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView.onSaveInstanceState(outState);
     }
 
-    /*
-    // ??
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-    */
 
     @Override
     public void onAttach(Context context) {
@@ -412,59 +404,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         return output;
     }
 
-    private void saveFile(Context context, String filename, String data){
-        try{
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(filename, Context.MODE_PRIVATE));
-            outputStreamWriter.write(data);
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-    private String rebuildCollected(List<String> current, String json){
-        String result = "";
-        result += getDate(json);
-        result += "\n";
-        for (String element : current){
-            result += element;
-            result += "\n";
-        }
-        return result;
-    }
-
-    private void checkCollected(Context context, List<Feature> features, String jsonString){
-        File file = context.getFileStreamPath("Collected");
-        Log.i("checkexists","checkexists");
-        if(file != null || file.exists()){
-            currentCollected = new LinkedList<String>(Arrays.asList(loadFile(getContext(),"Collected").split("\n")));
-            if (!currentCollected.contains(getDate(jsonString))){
-                String newCollected = "";
-                newCollected += getDate(jsonString);
-                newCollected += "\n";
-                for (Feature f : features){
-                    if (f.geometry() instanceof Point){
-                        newCollected += f.getStringProperty("id");
-                        newCollected += "\n";
-                    }
-                }
-                saveFile(getContext(),"Collected",newCollected);
-                currentCollected = new LinkedList<String>(Arrays.asList(newCollected.split("\n")));
-            }
-        } else {
-            String newCollected = "";
-            newCollected += getDate(jsonString);
-            newCollected += "\n";
-            for (Feature f : features){
-                if (f.geometry() instanceof Point){
-                    newCollected += f.getStringProperty("id");
-                    newCollected += "\n";
-                }
-            }
-            saveFile(getContext(),"Collected",newCollected);
-            currentCollected = new LinkedList<String>(Arrays.asList(newCollected.split("\n")));
-        }
-    }
 
     private String getDate(String jsonString){
         String date = "";
@@ -544,7 +483,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()){
                     DocumentSnapshot document = task.getResult();
-                    //Log.i("Does Exist Document", "info: " + document.getData());
                     if (document.exists()){
                         Log.d("LOADINFODOCUMENTEXAMPLE", "DocumentSnapshot data: " + document.getData());
                         Map<String, Object> temp = document.getData();
@@ -558,11 +496,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                             }
                         }
 
-                        //Log.i("LOADINFODOCUMENT","Document Data" + document);
-                        //for (Map.Entry<String, Object> entry : temp.entrySet()){
-                            //Log.i("LOADINFO",entry.getValue().toString());
-                            //coinData.put(entry.getKey(), entry.getValue().toString());
-                        //}
                         setMarkers(features);
                     } else {
                         Log.d("Missing Document", "No such document");

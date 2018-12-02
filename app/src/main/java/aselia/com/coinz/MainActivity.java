@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity
         FirebaseApp.initializeApp(this);
         FirebaseAuth mAuth;
         mAuth = FirebaseAuth.getInstance();
+        mAuth.signOut();
 
     }
 
@@ -126,7 +127,8 @@ public class MainActivity extends AppCompatActivity
         EditText passwordedit = findViewById(R.id.editTextPass);
         //Fragment fragment = null;
 
-        if (mAuth.getInstance().getCurrentUser() != null){
+        Log.i("CUSER", "user: " + mAuth.getCurrentUser());
+        if (mAuth.getCurrentUser() != null){
             if (id == R.id.Map) {
                 fragment = new map();
                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
@@ -136,17 +138,7 @@ public class MainActivity extends AppCompatActivity
             } else if (id == R.id.Coin_Transfer) {
                 fragment = new coin();
                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-            }/* else if (id == R.id.Menu) {
-                if (fragment != null){
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction ft = fragmentManager.beginTransaction();
-                    ft.remove(fragment);
-                    ft.commit();
-                    showUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-                    mAuth.signOut();
-                    Toast.makeText(this, "You have signed out", Toast.LENGTH_SHORT).show();
-                }
-            }*/
+            }
 
             if (fragment != null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -275,7 +267,6 @@ public class MainActivity extends AppCompatActivity
                         }
                     });
         } else {
-            Log.i("entered11","enter");
             Toast.makeText(getBaseContext(), "Check an email is entered and the password at least 6 characters long", Toast.LENGTH_SHORT).show();
         }
 
