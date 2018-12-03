@@ -47,12 +47,10 @@ import java.util.Map;
  * create an instance of this fragment.
  */
 public class bank extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -82,15 +80,7 @@ public class bank extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment bank.
-     */
-    // TODO: Rename and change types and number of parameters
+
     public static bank newInstance(String param1, String param2) {
         bank fragment = new bank();
         Bundle args = new Bundle();
@@ -122,9 +112,8 @@ public class bank extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()){
                         money = (double) document.getData().get("Money");
-                        if (document.getData().get("date2") == getDate(jsonString)){
+                        if (document.getData().get("date2").equals(getDate(jsonString))){
                             Map<String, Object> user = document.getData();
-                            money = (Double) user.get("Money");
                             todaysCoins = Integer.valueOf(user.get("Traded").toString());
                             TextView textMoney = getView().findViewById(R.id.textMoney);
                             TextView textTraded = getView().findViewById(R.id.textTraded);
@@ -133,7 +122,6 @@ public class bank extends Fragment {
                         } else {
                             todaysCoins = 0;
                             Map<String, Object> user = document.getData();
-                            money = (Double) user.get("Money");
                             TextView textMoney = getView().findViewById(R.id.textMoney);
                             TextView textTraded = getView().findViewById(R.id.textTraded);
                             textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
@@ -528,7 +516,9 @@ public class bank extends Fragment {
     private Map<String, Object> packUserdata(){
         Map<String, Object> result = new HashMap<>();
         result.put("Money", Double.valueOf(money));
+        Log.i("todays", "tpda: " + todaysCoins);
         result.put("Traded", todaysCoins);
+        result.put("date2", getDate(jsonString));
 
         return result;
     }

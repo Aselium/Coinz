@@ -52,12 +52,10 @@ import java.util.Set;
 
 
 public class map extends Fragment implements OnMapReadyCallback, LocationEngineListener, PermissionsListener {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -85,7 +83,6 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     }
 
 
-    // TODO: Rename and change types and number of parameters
     public static map newInstance(String param1, String param2) {
         map fragment = new map();
         Bundle args = new Bundle();
@@ -145,7 +142,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()){
                     DocumentSnapshot document = task.getResult();
-                    if (document.exists() && document.getData().containsValue(getDate(jsonString))){
+                    if (document.exists() && document.getData().get("date").equals(getDate(jsonString))){
                         loadCoinData();
                     } else {
                         coinData = generateCoinData(featureCollection);
