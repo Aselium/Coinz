@@ -168,7 +168,7 @@ public class bank extends Fragment {
                 String selected = parent.getItemAtPosition(position).toString().trim();
                 if (selected == ""){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (todaysCoins < 25){
                     ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
                     money += Double.valueOf(selected) * dolrRate;
                     dolrCollected.remove(selected);
@@ -179,7 +179,10 @@ public class bank extends Fragment {
                     arrayAdapterDOLR.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
+                    textTraded.setText(String.valueOf(todaysCoins));
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -190,7 +193,7 @@ public class bank extends Fragment {
                 String selected = parent.getItemAtPosition(position).toString().trim();
                 if (selected == ""){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (todaysCoins < 25){
                     ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow,penyCollected);
                     money += Double.valueOf(selected) * penyRate;
                     penyCollected.remove(selected);
@@ -201,7 +204,10 @@ public class bank extends Fragment {
                     arrayAdapterPENY.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
+                    textTraded.setText(String.valueOf(todaysCoins));
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -212,7 +218,7 @@ public class bank extends Fragment {
                 String selected = parent.getItemAtPosition(position).toString().trim();
                 if (selected == ""){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (todaysCoins < 25){
                     ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
                     money += Double.valueOf(selected) * shilRate;
                     shilCollected.remove(selected);
@@ -223,7 +229,10 @@ public class bank extends Fragment {
                     arrayAdapterSHIL.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
+                    textTraded.setText(String.valueOf(todaysCoins));
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -234,7 +243,7 @@ public class bank extends Fragment {
                 String selected = parent.getItemAtPosition(position).toString().trim();
                 if (selected == ""){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (todaysCoins < 25){
                     ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
                     money += Double.valueOf(selected) * quidRate;
                     quidCollected.remove(selected);
@@ -245,7 +254,10 @@ public class bank extends Fragment {
                     arrayAdapterQUID.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
+                    textTraded.setText(String.valueOf(todaysCoins));
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
             }
         });
