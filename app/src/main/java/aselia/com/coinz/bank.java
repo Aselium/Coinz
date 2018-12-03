@@ -132,13 +132,13 @@ public class bank extends Fragment {
         ListView collectedListSHIL = view.findViewById(R.id.coinboxSHIL);
         ListView collectedListQUID = view.findViewById(R.id.coinboxQUID);
 
-
+        /*
         int width = getResources().getDisplayMetrics().widthPixels/4;
         int height = getResources().getDisplayMetrics().heightPixels/2;
         collectedListDOLR.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
         collectedListPENY.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
         collectedListSHIL.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
-        collectedListQUID.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
+        collectedListQUID.setLayoutParams(new RelativeLayout.LayoutParams(width,height));*/
 
         TextView textDate = view.findViewById(R.id.textDate);
         TextView textMoney = view.findViewById(R.id.textMoney);
@@ -150,7 +150,7 @@ public class bank extends Fragment {
 
         textDate.setText(getDate(jsonString));
         textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins));
+        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
         textDOLR.setText("DOLR: " + Double.toString(dolrRate).substring(0, Math.min(Double.toString(dolrRate).length(), 8)));
         textPENY.setText("PENY: " + Double.toString(penyRate).substring(0, Math.min(Double.toString(penyRate).length(), 8)));
         textSHIL.setText("SHIL: " + Double.toString(shilRate).substring(0, Math.min(Double.toString(shilRate).length(), 8)));
