@@ -1,6 +1,7 @@
 package aselia.com.coinz;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,6 +29,7 @@ import org.w3c.dom.Text;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,6 +124,7 @@ public class bank extends Fragment {
                         money = (double) document.getData().get("Money");
                         if (document.getData().containsValue(getDate(jsonString))){
                             Map<String, Object> user = document.getData();
+                            money = (Double) user.get("Money");
                             todaysCoins = Integer.valueOf(user.get("Traded").toString());
                         } else {
                             todaysCoins = 0;
@@ -179,8 +182,9 @@ public class bank extends Fragment {
                     arrayAdapterDOLR.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
-                    textTraded.setText(String.valueOf(todaysCoins));
+                    textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                    saveData();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -204,8 +208,9 @@ public class bank extends Fragment {
                     arrayAdapterPENY.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
-                    textTraded.setText(String.valueOf(todaysCoins));
+                    textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                    saveData();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -229,8 +234,9 @@ public class bank extends Fragment {
                     arrayAdapterSHIL.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
-                    textTraded.setText(String.valueOf(todaysCoins));
+                    textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                    saveData();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -256,6 +262,7 @@ public class bank extends Fragment {
                     todaysCoins += 1;
                     textTraded.setText(String.valueOf(todaysCoins));
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                    saveData();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -413,6 +420,10 @@ public class bank extends Fragment {
                     if (document.exists()){
                         collectedCoins = new HashMap<>();
                         collectedCoins = document.getData();
+                        TextView textMoney = getView().findViewById(R.id.textMoney);
+                        TextView textTraded = getView().findViewById(R.id.textTraded);
+                        textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
+                        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     }
                 }
                 populateList();
@@ -433,7 +444,61 @@ public class bank extends Fragment {
         Map<String, Object> result = new HashMap<>();
         String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
 
+        if (dolrCollected.contains("") || dolrCollected.isEmpty()){
+            result.put("DOLR",null);
+        } else {
+            String temp = "";
+            for (String str : dolrCollected){
+                temp += str + ",";
+            }
+            temp = temp.substring(0,temp.length() -1);
+            result.put("DOLR",temp);
+        }
+
+        if (penyCollected.contains("") || dolrCollected.isEmpty()){
+            result.put("PENY",null);
+        } else {
+            String temp = "";
+            for (String str : penyCollected){
+                temp += str + ",";
+            }
+            temp = temp.substring(0,temp.length() -1);
+            result.put("PENY",temp);
+        }
+
+        if (shilCollected.contains("") || dolrCollected.isEmpty()){
+            result.put("SHIL",null);
+        } else {
+            String temp = "";
+            for (String str : shilCollected){
+                temp += str + ",";
+            }
+            temp = temp.substring(0,temp.length() -1);
+            result.put("SHIL",temp);
+        }
+
+        if (quidCollected.contains("") || dolrCollected.isEmpty()){
+            result.put("QUID",null);
+        } else {
+            String temp = "";
+            for (String str : quidCollected){
+                temp += str + ",";
+            }
+            temp = temp.substring(0,temp.length() -1);
+            result.put("QUID",temp);
+        }
         return result;
+    }
+
+    private void saveData(){
+        Map<String,Object> userData = packUserdata();
+        Map<String,Object> collectData = packCollecteddata();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("collectData").document(currentUser);
+        docRef.set(collectData);
+        docRef = db.collection("userData").document(currentUser);
+        docRef.update(userData);
+        db = null;
     }
 
     /**
