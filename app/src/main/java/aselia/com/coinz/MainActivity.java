@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener, bank2.OnFragmentInteractionListener {
 
     Fragment fragment = null;
     private FirebaseAuth mAuth;
@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity
                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             } else if (id == R.id.Coin_Transfer) {
                 fragment = new coin();
+                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            } else if (id == R.id.Bank2) {
+                fragment = new bank2();
                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             }
 
@@ -274,7 +277,7 @@ public class MainActivity extends AppCompatActivity
                                 collectInfo.put("QUID",null);
                                 docRef.set(collectInfo);
 
-                                docRef = db.collection("receiveData").document(mAuth.getCurrentUser().getUid());
+                                docRef = db.collection("receiveData").document(mAuth.getCurrentUser().getEmail());
                                 Map<String, String> receiveInfo = new HashMap<>();
                                 receiveInfo.put("PENY",null);
                                 receiveInfo.put("DOLR",null);

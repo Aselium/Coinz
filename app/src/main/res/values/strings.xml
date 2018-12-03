@@ -27,5 +27,7 @@
     <string name="shil">SHIL</string>
     <string name="peny">PENY</string>
 
+    <string name="coinReceive">Receive Coins</string>
+
     <string name="access_token">pk.eyJ1IjoiYXNlbGlhIiwiYSI6ImNqcDJocHNpMzA2cTIzdmxrazgxZGhqZ3QifQ.AFaziWr-WEIO2wDcrN9e9Q</string>
 </resources>
