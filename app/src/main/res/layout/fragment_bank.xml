@@ -104,87 +104,71 @@
             android:layout_marginBottom="-60dp"
             android:text="@string/switchReceived" />
 
-        <Button
-            android:id="@+id/cash"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/switchtype"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="65dp"
-            android:text="@string/cashCoin" />
-
-        <ListView
-            android:id="@+id/coinboxQUID"
-            android:layout_width="90dp"
-            android:layout_height="220dp"
-            android:layout_below="@+id/cash"
-            android:layout_marginTop="50dp" />
-
-        <ListView
-            android:id="@+id/coinboxDOLR"
-            android:layout_width="90dp"
-            android:layout_height="220dp"
-            android:layout_below="@+id/cash"
-            android:layout_alignEnd="@id/coinboxDOLR"
-            android:layout_marginStart="100dp"
-            android:layout_marginTop="50dp" />
-
-        <ListView
-            android:id="@+id/coinboxSHIL"
-            android:layout_width="90dp"
-            android:layout_height="220dp"
-            android:layout_below="@+id/cash"
-            android:layout_marginStart="200dp"
-            android:layout_marginTop="50dp" />
-
-        <ListView
-            android:id="@+id/coinboxPENY"
-            android:layout_width="90dp"
-            android:layout_height="220dp"
-            android:layout_below="@+id/cash"
-            android:layout_marginStart="300dp"
-            android:layout_marginTop="50dp" />
-
         <TextView
             android:id="@+id/textQUID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/coinboxQUID"
-            android:layout_alignEnd="@+id/textMoney"
-            android:layout_marginBottom="-50dp"
-            android:layout_marginEnd="25dp"
+            android:layout_alignStart="@+id/textMoney"
+            android:layout_marginBottom="-120dp"
             android:text="@string/quid" />
 
         <TextView
             android:id="@+id/textDOLR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/coinboxQUID"
-            android:layout_marginBottom="-50dp"
-            android:layout_marginEnd="30dp"
-            android:layout_toStartOf="@+id/textTitleRates"
+            android:layout_alignStart="@+id/coinboxDOLR"
+            android:layout_alignBottom="@+id/textQUID"
             android:text="@string/dolr" />
-
-        <TextView
-            android:id="@+id/textPENY"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/coinboxQUID"
-            android:layout_alignStart="@+id/textPENYrate"
-            android:layout_marginBottom="-50dp"
-            android:layout_marginStart="5dp"
-            android:text="@string/peny" />
 
         <TextView
             android:id="@+id/textSHIL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/coinboxQUID"
             android:layout_alignStart="@+id/coinboxSHIL"
-            android:layout_marginBottom="-50dp"
-            android:layout_marginStart="20dp"
+            android:layout_alignBottom="@+id/textQUID"
             android:text="@string/shil" />
+
+        <TextView
+            android:id="@+id/textPENY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/coinboxPENY"
+            android:layout_alignBottom="@+id/textQUID"
+            android:text="@string/peny" />
+
+        <ListView
+            android:id="@+id/coinboxQUID"
+            android:layout_width="90dp"
+            android:layout_height="270dp"
+            android:layout_below="@+id/switchtype"
+            android:layout_marginTop="120dp" />
+
+        <ListView
+            android:id="@+id/coinboxDOLR"
+            android:layout_width="90dp"
+            android:layout_height="270dp"
+            android:layout_below="@+id/switchtype"
+            android:layout_alignEnd="@id/coinboxDOLR"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="120dp" />
+
+        <ListView
+            android:id="@+id/coinboxSHIL"
+            android:layout_width="90dp"
+            android:layout_height="270dp"
+            android:layout_below="@+id/switchtype"
+            android:layout_marginStart="200dp"
+            android:layout_marginTop="120dp" />
+
+        <ListView
+            android:id="@+id/coinboxPENY"
+            android:layout_width="90dp"
+            android:layout_height="270dp"
+            android:layout_below="@+id/switchtype"
+            android:layout_marginStart="300dp"
+            android:layout_marginTop="120dp" />
+
     </RelativeLayout>
 
 </LinearLayout>

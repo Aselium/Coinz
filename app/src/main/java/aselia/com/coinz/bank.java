@@ -9,10 +9,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -61,6 +63,16 @@ public class bank extends Fragment {
     private String jsonString;
     private String currentUser;
     private Map<String,Object> collectedCoins;
+
+    List<String> dolrCollected= new ArrayList<>();
+    List<String> penyCollected= new ArrayList<>();
+    List<String> shilCollected= new ArrayList<>();
+    List<String> quidCollected= new ArrayList<>();
+
+    ArrayAdapter<String> arrayAdapterDOLR;
+    ArrayAdapter<String> arrayAdapterPENY;
+    ArrayAdapter<String> arrayAdapterSHIL;
+    ArrayAdapter<String> arrayAdapterQUID;
 
     private OnFragmentInteractionListener mListener;
 
@@ -132,14 +144,6 @@ public class bank extends Fragment {
         ListView collectedListSHIL = view.findViewById(R.id.coinboxSHIL);
         ListView collectedListQUID = view.findViewById(R.id.coinboxQUID);
 
-        /*
-        int width = getResources().getDisplayMetrics().widthPixels/4;
-        int height = getResources().getDisplayMetrics().heightPixels/2;
-        collectedListDOLR.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
-        collectedListPENY.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
-        collectedListSHIL.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
-        collectedListQUID.setLayoutParams(new RelativeLayout.LayoutParams(width,height));*/
-
         TextView textDate = view.findViewById(R.id.textDate);
         TextView textMoney = view.findViewById(R.id.textMoney);
         TextView textTraded = view.findViewById(R.id.textTraded);
@@ -157,6 +161,94 @@ public class bank extends Fragment {
         textQUID.setText("QUID: " + Double.toString(quidRate).substring(0, Math.min(Double.toString(quidRate).length(), 8)));
 
         loadCollectData();
+
+        collectedListDOLR.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString().trim();
+                if (selected == ""){
+                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+                } else {
+                    ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
+                    money += Double.valueOf(selected) * dolrRate;
+                    dolrCollected.remove(selected);
+                    if (dolrCollected.isEmpty()){
+                        dolrCollected = Arrays.asList(new String[]{"None"});
+                    }
+                    collectedListDOLR.setAdapter(arrayAdapterDOLR);
+                    arrayAdapterDOLR.notifyDataSetChanged();
+                    textMoney.setText(String.valueOf(money));
+                    todaysCoins += 1;
+                    Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        collectedListPENY.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString().trim();
+                if (selected == ""){
+                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+                } else {
+                    ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow,penyCollected);
+                    money += Double.valueOf(selected) * penyRate;
+                    penyCollected.remove(selected);
+                    if ( penyCollected.isEmpty()){
+                        penyCollected = Arrays.asList(new String[]{"None"});
+                    }
+                    collectedListPENY.setAdapter(arrayAdapterPENY);
+                    arrayAdapterPENY.notifyDataSetChanged();
+                    textMoney.setText(String.valueOf(money));
+                    todaysCoins += 1;
+                    Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        collectedListSHIL.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString().trim();
+                if (selected == ""){
+                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+                } else {
+                    ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
+                    money += Double.valueOf(selected) * shilRate;
+                    shilCollected.remove(selected);
+                    if (shilCollected.isEmpty()){
+                        shilCollected = Arrays.asList(new String[]{"None"});
+                    }
+                    collectedListSHIL.setAdapter(arrayAdapterSHIL);
+                    arrayAdapterSHIL.notifyDataSetChanged();
+                    textMoney.setText(String.valueOf(money));
+                    todaysCoins += 1;
+                    Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        collectedListQUID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString().trim();
+                if (selected == ""){
+                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+                } else {
+                    ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
+                    money += Double.valueOf(selected) * quidRate;
+                    quidCollected.remove(selected);
+                    if (quidCollected.isEmpty()){
+                        quidCollected = Arrays.asList(new String[]{"None"});
+                    }
+                    collectedListQUID.setAdapter(arrayAdapterQUID);
+                    arrayAdapterQUID.notifyDataSetChanged();
+                    textMoney.setText(String.valueOf(money));
+                    todaysCoins += 1;
+                    Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         return view;
     }
@@ -269,7 +361,7 @@ public class bank extends Fragment {
             String x;
             String[] split;
             if (collectedCoins.get(currencies[i]) == null){
-                split = new String[]{"None"};
+                split = new String[]{""};
             } else {
                 x = collectedCoins.get(currencies[i]).toString();
                 split = x.split(",");
@@ -315,6 +407,21 @@ public class bank extends Fragment {
             }
         });
         db = null;
+    }
+
+    private Map<String, Object> packUserdata(){
+        Map<String, Object> result = new HashMap<>();
+        result.put("Money", Double.valueOf(money));
+        result.put("Traded", todaysCoins);
+
+        return result;
+    }
+
+    private Map<String, Object> packCollecteddata(){
+        Map<String, Object> result = new HashMap<>();
+        String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
+
+        return result;
     }
 
     /**
