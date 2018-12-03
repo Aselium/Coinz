@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -46,7 +47,7 @@ import java.util.Map;
  * Use the {@link bank#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class bank extends Fragment {
+public class bank extends Fragment{
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -73,6 +74,8 @@ public class bank extends Fragment {
     ArrayAdapter<String> arrayAdapterPENY;
     ArrayAdapter<String> arrayAdapterSHIL;
     ArrayAdapter<String> arrayAdapterQUID;
+
+    Button switchbtn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -295,20 +298,16 @@ public class bank extends Fragment {
             }
         });
 
-        //TextView textMoney = getView().findViewById(R.id.textMoney);
-        //TextView textTraded = getView().findViewById(R.id.textTraded);
         textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
         textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
+
+        Button switchbtn = view.findViewById(R.id.switchtype);
+        switchbtn.setVisibility(view.INVISIBLE);
 
         return view;
     }
 
-    /*
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }*/
+
 
     @Override
     public void onAttach(Context context) {
@@ -589,8 +588,10 @@ public class bank extends Fragment {
 
     public static boolean isNumeric(String str)
     {
-        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+        return str.matches("-?\\d+(\\.\\d+)?");
     }
+
+
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name

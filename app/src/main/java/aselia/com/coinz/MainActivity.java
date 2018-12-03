@@ -260,6 +260,7 @@ public class MainActivity extends AppCompatActivity
 
                                 DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
                                 Map<String,Object> userInfo = new HashMap<>();
+                                userInfo.put("date","Thu Jan 01 1970");
                                 userInfo.put("Money",0.0);
                                 userInfo.put("Traded", 0);
                                 userInfo.put("date2","Thu Jan 01 1970");
@@ -272,6 +273,14 @@ public class MainActivity extends AppCompatActivity
                                 collectInfo.put("SHIL",null);
                                 collectInfo.put("QUID",null);
                                 docRef.set(collectInfo);
+
+                                docRef = db.collection("receiveData").document(mAuth.getCurrentUser().getUid());
+                                Map<String, String> receiveInfo = new HashMap<>();
+                                receiveInfo.put("PENY",null);
+                                receiveInfo.put("DOLR",null);
+                                receiveInfo.put("SHIL",null);
+                                receiveInfo.put("QUID",null);
+                                docRef.set(receiveInfo);
 
                                 fragment = new map();
                                 hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
