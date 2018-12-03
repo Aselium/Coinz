@@ -155,10 +155,6 @@ public class bank2 extends Fragment{
         collectedListDOLR.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*if (dolrCollected.isEmpty()){
-                    List<List<String>> temp = getCollected();
-                    dolrCollected = temp.get(0);
-                }*/
                 List<List<String>> temp = getCollected();
                 dolrCollected = temp.get(0);
                 penyCollected = temp.get(1);
@@ -186,10 +182,6 @@ public class bank2 extends Fragment{
         collectedListPENY.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*if (penyCollected.isEmpty()){
-                    List<List<String>> temp = getCollected();
-                    penyCollected = temp.get(1);
-                }*/
                 List<List<String>> temp = getCollected();
                 dolrCollected = temp.get(0);
                 penyCollected = temp.get(1);
@@ -476,6 +468,11 @@ public class bank2 extends Fragment{
                     }
                 }
                 populateList();
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
             }
         });
         db = null;

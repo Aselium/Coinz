@@ -167,10 +167,6 @@ public class bank extends Fragment{
         collectedListDOLR.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*if (dolrCollected.isEmpty()){
-                    List<List<String>> temp = getCollected();
-                    dolrCollected = temp.get(0);
-                }*/
                 List<List<String>> temp = getCollected();
                 dolrCollected = temp.get(0);
                 penyCollected = temp.get(1);
@@ -202,10 +198,6 @@ public class bank extends Fragment{
         collectedListPENY.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*if (penyCollected.isEmpty()){
-                    List<List<String>> temp = getCollected();
-                    penyCollected = temp.get(1);
-                }*/
                 List<List<String>> temp = getCollected();
                 dolrCollected = temp.get(0);
                 penyCollected = temp.get(1);
@@ -507,6 +499,12 @@ public class bank extends Fragment{
                     }
                 }
                 populateList();
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
+                Log.i("popinfo" , "info: " + temp);
             }
         });
         db = null;
@@ -524,6 +522,10 @@ public class bank extends Fragment{
 
     private Map<String, Object> packCollecteddata(){
         Map<String, Object> result = new HashMap<>();
+        Log.i("data", "info: " + dolrCollected);
+        Log.i("data", "info: " + quidCollected);
+        Log.i("data", "info: " + shilCollected);
+        Log.i("data", "info: " + penyCollected);
 
         if (dolrCollected.contains("") || dolrCollected.isEmpty()){
             result.put("DOLR",null);
@@ -576,7 +578,8 @@ public class bank extends Fragment{
         Map<String,Object> collectData = packCollecteddata();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("collectData").document(currentUser);
-        docRef.set(collectData);
+        Log.i("Collectinfoagain","info: "+ collectData);
+        docRef.update(collectData);
         docRef = db.collection("userData").document(currentUser);
         docRef.update(userData);
         db = null;
@@ -590,8 +593,6 @@ public class bank extends Fragment{
     {
         return str.matches("-?\\d+(\\.\\d+)?");
     }
-
-
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
