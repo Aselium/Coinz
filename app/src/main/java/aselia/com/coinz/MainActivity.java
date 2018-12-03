@@ -3,6 +3,7 @@ package aselia.com.coinz;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -15,6 +16,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,6 +49,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,8 +79,17 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        Date currentTime = Calendar.getInstance().getTime();
+
+        String day = (String) DateFormat.format("dd", currentTime);
+        String monthNumber  = (String) DateFormat.format("MM",   currentTime);
+        String year         = (String) DateFormat.format("yyyy", currentTime);
+        String pt1 = "http://homepages.inf.ed.ac.uk/stg/coinz/";
+        String pt2 = "/coinzmap.geojson";
+        String url = pt1 + year + "/" + monthNumber + "/" + day + pt2;
+
         DownloadFileTask dl = new DownloadFileTask();
-        dl.execute("http://homepages.inf.ed.ac.uk/stg/coinz/2018/10/03/coinzmap.geojson");
+        dl.execute(url);
 
         FirebaseApp.initializeApp(this);
         FirebaseAuth mAuth;
@@ -257,6 +270,7 @@ public class MainActivity extends AppCompatActivity
                                 Map<String,Object> userInfo = new HashMap<>();
                                 userInfo.put("Money",0.0);
                                 userInfo.put("Traded", 0);
+                                userInfo.put("date2","Thu Jan 01 1970");
                                 docRef.set(userInfo);
 
                                 docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());

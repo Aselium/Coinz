@@ -122,7 +122,7 @@ public class bank extends Fragment {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()){
                         money = (double) document.getData().get("Money");
-                        if (document.getData().containsValue(getDate(jsonString))){
+                        if (document.getData().get("date2") == getDate(jsonString)){
                             Map<String, Object> user = document.getData();
                             money = (Double) user.get("Money");
                             todaysCoins = Integer.valueOf(user.get("Traded").toString());
@@ -132,6 +132,12 @@ public class bank extends Fragment {
                             textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                         } else {
                             todaysCoins = 0;
+                            Map<String, Object> user = document.getData();
+                            money = (Double) user.get("Money");
+                            TextView textMoney = getView().findViewById(R.id.textMoney);
+                            TextView textTraded = getView().findViewById(R.id.textTraded);
+                            textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
+                            textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                         }
                     }
                 } else {
