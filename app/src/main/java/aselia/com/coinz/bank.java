@@ -126,6 +126,10 @@ public class bank extends Fragment {
                             Map<String, Object> user = document.getData();
                             money = (Double) user.get("Money");
                             todaysCoins = Integer.valueOf(user.get("Traded").toString());
+                            TextView textMoney = getView().findViewById(R.id.textMoney);
+                            TextView textTraded = getView().findViewById(R.id.textTraded);
+                            textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
+                            textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                         } else {
                             todaysCoins = 0;
                         }
@@ -156,8 +160,6 @@ public class bank extends Fragment {
         TextView textQUID = view.findViewById(R.id.textQUIDrate);
 
         textDate.setText(getDate(jsonString));
-        textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
         textDOLR.setText("DOLR: " + Double.toString(dolrRate).substring(0, Math.min(Double.toString(dolrRate).length(), 8)));
         textPENY.setText("PENY: " + Double.toString(penyRate).substring(0, Math.min(Double.toString(penyRate).length(), 8)));
         textSHIL.setText("SHIL: " + Double.toString(shilRate).substring(0, Math.min(Double.toString(shilRate).length(), 8)));
@@ -168,23 +170,32 @@ public class bank extends Fragment {
         collectedListDOLR.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                /*if (dolrCollected.isEmpty()){
+                    List<List<String>> temp = getCollected();
+                    dolrCollected = temp.get(0);
+                }*/
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
                 String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == ""){
+                if (selected == "" || selected == "None" || !(isNumeric(selected))){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
                 } else if (todaysCoins < 25){
-                    ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
                     money += Double.valueOf(selected) * dolrRate;
-                    dolrCollected.remove(selected);
+                    dolrCollected.remove(position);
                     if (dolrCollected.isEmpty()){
                         dolrCollected = Arrays.asList(new String[]{"None"});
                     }
+                    ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
                     collectedListDOLR.setAdapter(arrayAdapterDOLR);
                     arrayAdapterDOLR.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
                     textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
-                    saveData();
+                    updateCollectedCoins();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -194,23 +205,32 @@ public class bank extends Fragment {
         collectedListPENY.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                /*if (penyCollected.isEmpty()){
+                    List<List<String>> temp = getCollected();
+                    penyCollected = temp.get(1);
+                }*/
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
                 String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == ""){
+                if (selected == "" || selected == "None" || !(isNumeric(selected))){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
                 } else if (todaysCoins < 25){
-                    ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow,penyCollected);
                     money += Double.valueOf(selected) * penyRate;
-                    penyCollected.remove(selected);
-                    if ( penyCollected.isEmpty()){
+                    penyCollected.remove(position);
+                    if (penyCollected.isEmpty()){
                         penyCollected = Arrays.asList(new String[]{"None"});
                     }
+                    ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow,penyCollected);
                     collectedListPENY.setAdapter(arrayAdapterPENY);
                     arrayAdapterPENY.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
                     textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
-                    saveData();
+                    updateCollectedCoins();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -220,23 +240,30 @@ public class bank extends Fragment {
         collectedListSHIL.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
+
                 String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == ""){
+                if (selected == "" || selected == "None" || !(isNumeric(selected))){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
                 } else if (todaysCoins < 25){
-                    ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
                     money += Double.valueOf(selected) * shilRate;
-                    shilCollected.remove(selected);
+                    shilCollected.remove(position);
                     if (shilCollected.isEmpty()){
                         shilCollected = Arrays.asList(new String[]{"None"});
                     }
+                    ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
                     collectedListSHIL.setAdapter(arrayAdapterSHIL);
                     arrayAdapterSHIL.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
                     textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
-                    saveData();
+                    updateCollectedCoins();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
@@ -246,28 +273,38 @@ public class bank extends Fragment {
         collectedListQUID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                List<List<String>> temp = getCollected();
+                dolrCollected = temp.get(0);
+                penyCollected = temp.get(1);
+                shilCollected = temp.get(2);
+                quidCollected = temp.get(3);
                 String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == ""){
+                if (selected == "" || selected == "None" || !(isNumeric(selected))){
                     Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
                 } else if (todaysCoins < 25){
-                    ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
                     money += Double.valueOf(selected) * quidRate;
-                    quidCollected.remove(selected);
+                    quidCollected.remove(position);
                     if (quidCollected.isEmpty()){
                         quidCollected = Arrays.asList(new String[]{"None"});
                     }
+                    ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
                     collectedListQUID.setAdapter(arrayAdapterQUID);
                     arrayAdapterQUID.notifyDataSetChanged();
                     textMoney.setText(String.valueOf(money));
                     todaysCoins += 1;
-                    textTraded.setText(String.valueOf(todaysCoins));
+                    textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
                     Toast.makeText(getContext(), "Coin has been cashed out", Toast.LENGTH_SHORT).show();
-                    saveData();
+                    updateCollectedCoins();
                 } else {
                     Toast.makeText(getContext(), "Already traded 25 today", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        //TextView textMoney = getView().findViewById(R.id.textMoney);
+        //TextView textTraded = getView().findViewById(R.id.textTraded);
+        textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
+        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
 
         return view;
     }
@@ -294,6 +331,12 @@ public class bank extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        saveData();
     }
 
     private String loadFile(Context context, String filename) {
@@ -363,16 +406,16 @@ public class bank extends Fragment {
         }
     }
 
-    private void populateList(){
+    private List<List<String>> populateList(){
         ListView collectedListDOLR = getView().findViewById(R.id.coinboxDOLR);
         ListView collectedListPENY = getView().findViewById(R.id.coinboxPENY);
         ListView collectedListSHIL = getView().findViewById(R.id.coinboxSHIL);
         ListView collectedListQUID = getView().findViewById(R.id.coinboxQUID);
 
-        List<String> dolrCollected= new ArrayList<>();
-        List<String> penyCollected= new ArrayList<>();
-        List<String> shilCollected= new ArrayList<>();
-        List<String> quidCollected= new ArrayList<>();
+        List<String> dolrCollected = new ArrayList<>();
+        List<String> penyCollected = new ArrayList<>();
+        List<String> shilCollected = new ArrayList<>();
+        List<String> quidCollected = new ArrayList<>();
 
         String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
 
@@ -405,7 +448,51 @@ public class bank extends Fragment {
             }
         }
 
+        List<List<String>> result = new ArrayList<>();
+        result.add(dolrCollected);
+        result.add(penyCollected);
+        result.add(shilCollected);
+        result.add(quidCollected);
 
+        return result;
+    }
+
+    private List<List<String>> getCollected(){
+        List<String> dolrCollectedt = new ArrayList<>();
+        List<String> penyCollectedt = new ArrayList<>();
+        List<String> shilCollectedt = new ArrayList<>();
+        List<String> quidCollectedt = new ArrayList<>();
+
+        String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
+
+        for (int i = 0; i < 4; i++){
+            String x;
+            String[] split;
+            if (collectedCoins.get(currencies[i]) == null){
+                split = new String[]{""};
+            } else {
+                x = collectedCoins.get(currencies[i]).toString();
+                split = x.split(",");
+            }
+
+            if (i == 0){
+                dolrCollectedt = new ArrayList<>(Arrays.asList(split));
+            } else if (i == 1){
+                penyCollectedt = new ArrayList<>(Arrays.asList(split));
+            } else if (i == 2){
+                shilCollectedt = new ArrayList<>(Arrays.asList(split));
+            } else if (i == 3){
+                quidCollectedt = new ArrayList<>(Arrays.asList(split));
+            }
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        result.add(dolrCollectedt);
+        result.add(penyCollectedt);
+        result.add(shilCollectedt);
+        result.add(quidCollectedt);
+
+        return result;
     }
 
     private void loadCollectData(){
@@ -442,7 +529,6 @@ public class bank extends Fragment {
 
     private Map<String, Object> packCollecteddata(){
         Map<String, Object> result = new HashMap<>();
-        String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
 
         if (dolrCollected.contains("") || dolrCollected.isEmpty()){
             result.put("DOLR",null);
@@ -455,7 +541,7 @@ public class bank extends Fragment {
             result.put("DOLR",temp);
         }
 
-        if (penyCollected.contains("") || dolrCollected.isEmpty()){
+        if (penyCollected.contains("") || penyCollected.isEmpty()){
             result.put("PENY",null);
         } else {
             String temp = "";
@@ -466,7 +552,7 @@ public class bank extends Fragment {
             result.put("PENY",temp);
         }
 
-        if (shilCollected.contains("") || dolrCollected.isEmpty()){
+        if (shilCollected.contains("") || shilCollected.isEmpty()){
             result.put("SHIL",null);
         } else {
             String temp = "";
@@ -477,7 +563,7 @@ public class bank extends Fragment {
             result.put("SHIL",temp);
         }
 
-        if (quidCollected.contains("") || dolrCollected.isEmpty()){
+        if (quidCollected.contains("") || quidCollected.isEmpty()){
             result.put("QUID",null);
         } else {
             String temp = "";
@@ -501,16 +587,15 @@ public class bank extends Fragment {
         db = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    private void updateCollectedCoins(){
+        collectedCoins = packCollecteddata();
+    }
+
+    public static boolean isNumeric(String str)
+    {
+        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+    }
+
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
