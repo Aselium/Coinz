@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "634484830565",
+    "firebase_url": "https://coinz-b26c2.firebaseio.com",
+    "project_id": "coinz-b26c2",
+    "storage_bucket": "coinz-b26c2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:634484830565:android:32c1a5190cafd244",
+        "android_client_info": {
+          "package_name": "aselia.com.coinz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "634484830565-qhohdgd8t970dggosvsotor8t137jq7v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr4ol6SWn8XfsUZvkeXGkLNHPmC_G0VQc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -9,6 +9,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,6 +26,11 @@ import org.w3c.dom.Text;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -52,6 +60,7 @@ public class bank extends Fragment {
     private double shilRate;
     private String jsonString;
     private String currentUser;
+    private Map<String,Object> collectedCoins;
 
     private OnFragmentInteractionListener mListener;
 
@@ -118,6 +127,18 @@ public class bank extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_bank, container, false);
+        ListView collectedListDOLR = view.findViewById(R.id.coinboxDOLR);
+        ListView collectedListPENY = view.findViewById(R.id.coinboxPENY);
+        ListView collectedListSHIL = view.findViewById(R.id.coinboxSHIL);
+        ListView collectedListQUID = view.findViewById(R.id.coinboxQUID);
+
+
+        int width = getResources().getDisplayMetrics().widthPixels/4;
+        int height = getResources().getDisplayMetrics().heightPixels/2;
+        collectedListDOLR.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
+        collectedListPENY.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
+        collectedListSHIL.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
+        collectedListQUID.setLayoutParams(new RelativeLayout.LayoutParams(width,height));
 
         TextView textDate = view.findViewById(R.id.textDate);
         TextView textMoney = view.findViewById(R.id.textMoney);
@@ -135,15 +156,17 @@ public class bank extends Fragment {
         textSHIL.setText("SHIL: " + Double.toString(shilRate).substring(0, Math.min(Double.toString(shilRate).length(), 8)));
         textQUID.setText("QUID: " + Double.toString(quidRate).substring(0, Math.min(Double.toString(quidRate).length(), 8)));
 
+        loadCollectData();
+
         return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+    /*
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
-    }
+    }*/
 
     @Override
     public void onAttach(Context context) {
@@ -216,9 +239,7 @@ public class bank extends Fragment {
                     check = true;
                 }
             }
-            //TODO Combine into 1 REGEX
             rateS = rateS.replaceAll("[^\\d.]", "");
-            //rateS = rateS.replaceAll("}","");
             if (i == 0){
                 dolrRate = Double.valueOf(rateS);
             } else if (i == 1){
@@ -229,6 +250,71 @@ public class bank extends Fragment {
                 shilRate = Double.valueOf(rateS);
             }
         }
+    }
+
+    private void populateList(){
+        ListView collectedListDOLR = getView().findViewById(R.id.coinboxDOLR);
+        ListView collectedListPENY = getView().findViewById(R.id.coinboxPENY);
+        ListView collectedListSHIL = getView().findViewById(R.id.coinboxSHIL);
+        ListView collectedListQUID = getView().findViewById(R.id.coinboxQUID);
+
+        List<String> dolrCollected= new ArrayList<>();
+        List<String> penyCollected= new ArrayList<>();
+        List<String> shilCollected= new ArrayList<>();
+        List<String> quidCollected= new ArrayList<>();
+
+        String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
+
+        for (int i = 0; i < 4; i++){
+            String x;
+            String[] split;
+            if (collectedCoins.get(currencies[i]) == null){
+                split = new String[]{"None"};
+            } else {
+                x = collectedCoins.get(currencies[i]).toString();
+                split = x.split(",");
+            }
+
+            if (i == 0){
+                dolrCollected = new ArrayList<>(Arrays.asList(split));
+                ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
+                collectedListDOLR.setAdapter(arrayAdapterDOLR);
+            } else if (i == 1){
+                penyCollected = new ArrayList<>(Arrays.asList(split));
+                ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow, penyCollected);
+                collectedListPENY.setAdapter(arrayAdapterPENY);
+            } else if (i == 2){
+                shilCollected = new ArrayList<>(Arrays.asList(split));
+                ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow, shilCollected);
+                collectedListSHIL.setAdapter(arrayAdapterSHIL);
+            } else if (i == 3){
+                quidCollected = new ArrayList<>(Arrays.asList(split));
+                ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow, quidCollected);
+                collectedListQUID.setAdapter(arrayAdapterQUID);
+            }
+        }
+
+
+    }
+
+    private void loadCollectData(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("collectData").document(currentUser);
+
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()){
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()){
+                        collectedCoins = new HashMap<>();
+                        collectedCoins = document.getData();
+                    }
+                }
+                populateList();
+            }
+        });
+        db = null;
     }
 
     /**
