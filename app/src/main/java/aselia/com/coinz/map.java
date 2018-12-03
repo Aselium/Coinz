@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -83,14 +84,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment map.
-     */
+
     // TODO: Rename and change types and number of parameters
     public static map newInstance(String param1, String param2) {
         map fragment = new map();
@@ -98,6 +92,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -121,6 +116,8 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView = (MapView) v.findViewById(R.id.mapview);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+        getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
         return v;
 
@@ -514,6 +511,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                     if (document.exists()){
                         currentCollected = new HashMap<>();
                         currentCollected = document.getData();
+                        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     }
                 }
             }
