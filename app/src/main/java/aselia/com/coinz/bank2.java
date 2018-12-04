@@ -379,7 +379,7 @@ public class bank2 extends Fragment{
             String x;
             String[] split;
             if (collectedCoins.get(currencies[i]) == null){
-                split = new String[]{""};
+                split = new String[]{"None"};
             } else {
                 x = collectedCoins.get(currencies[i]).toString();
                 split = x.split(",");
@@ -425,7 +425,7 @@ public class bank2 extends Fragment{
             String x;
             String[] split;
             if (collectedCoins.get(currencies[i]) == null){
-                split = new String[]{""};
+                split = new String[]{"None"};
             } else {
                 x = collectedCoins.get(currencies[i]).toString();
                 split = x.split(",");
@@ -489,7 +489,7 @@ public class bank2 extends Fragment{
     private Map<String, Object> packCollecteddata(){
         Map<String, Object> result = new HashMap<>();
 
-        if (dolrCollected.contains("") || dolrCollected.isEmpty()){
+        if (dolrCollected.contains("") || dolrCollected.isEmpty() || dolrCollected.contains("None")){
             result.put("DOLR",null);
         } else {
             String temp = "";
@@ -500,7 +500,7 @@ public class bank2 extends Fragment{
             result.put("DOLR",temp);
         }
 
-        if (penyCollected.contains("") || penyCollected.isEmpty()){
+        if (penyCollected.contains("") || penyCollected.isEmpty() || dolrCollected.contains("None")){
             result.put("PENY",null);
         } else {
             String temp = "";
@@ -511,7 +511,7 @@ public class bank2 extends Fragment{
             result.put("PENY",temp);
         }
 
-        if (shilCollected.contains("") || shilCollected.isEmpty()){
+        if (shilCollected.contains("") || shilCollected.isEmpty() || dolrCollected.contains("None")){
             result.put("SHIL",null);
         } else {
             String temp = "";
@@ -522,7 +522,7 @@ public class bank2 extends Fragment{
             result.put("SHIL",temp);
         }
 
-        if (quidCollected.contains("") || quidCollected.isEmpty()){
+        if (quidCollected.contains("") || quidCollected.isEmpty() || dolrCollected.contains("None")){
             result.put("QUID",null);
         } else {
             String temp = "";
