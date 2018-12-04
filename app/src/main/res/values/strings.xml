@@ -19,8 +19,6 @@
 
     <string name="loading">Loading…</string>
     <string name="todayRates">Today\'s Exchange Rates: </string>
-    <string name="switchReceived">Switch to Received Coins</string>
-    <string name="switchCollected">Switch to Collected Coins</string>
     <string name="cashCoin">Cash out selected Coin</string>
     <string name="quid">QUID</string>
     <string name="dolr">DOLR</string>
@@ -37,6 +35,6 @@
     <string name="stats">Statistics</string>
 
     <string name="access_token">pk.eyJ1IjoiYXNlbGlhIiwiYSI6ImNqcDJocHNpMzA2cTIzdmxrazgxZGhqZ3QifQ.AFaziWr-WEIO2wDcrN9e9Q</string>
-    
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
