@@ -78,6 +78,9 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     private List<Feature> features;
     private String currentUser;
 
+    private double dist;
+    private int cointot;
+
     public map() {
         // Required empty public constructor
     }
@@ -103,6 +106,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -121,6 +125,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onMapReady(MapboxMap mapboxMap) {
         map = mapboxMap;
         map.getUiSettings().setCompassEnabled(true);
@@ -137,24 +142,23 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         currentUser = mAuth.getCurrentUser().getUid();
 
         DocumentReference docRef = db.collection("userData").document(currentUser);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists() && document.getData().get("date").equals(getDate(jsonString))){
-                        loadCoinData();
-                    } else {
-                        coinData = generateCoinData(featureCollection);
-                        Map<String, Object> currentDate = new HashMap<>();
-                        currentDate.put("date",getDate(jsonString));
-                        docRef.update(currentDate);
-                        setMarkers(features);
-                        saveCoinData();
-                    }
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                DocumentSnapshot document = task.getResult();
+                if (document.exists() && document.getData().get("date").equals(getDate(jsonString))){
+                    loadCoinData();
+                    cointot = Integer.valueOf(document.getData().get("totalCoins").toString());
+                    dist = (double) document.getData().get("totalDistance");
                 } else {
-                    Log.d("userData load Failed", "get failed with", task.getException());
+                    coinData = generateCoinData(featureCollection);
+                    Map<String, Object> currentDate = new HashMap<>();
+                    currentDate.put("date",getDate(jsonString));
+                    docRef.update(currentDate);
+                    setMarkers(features);
+                    saveCoinData();
                 }
+            } else {
+                Log.d("userData load Failed", "get failed with", task.getException());
             }
         });
         loadCollectData();
@@ -213,6 +217,9 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
     @Override
     public void onLocationChanged(Location location) {
         if (location != null){
+            if (originLocation != null){
+                dist += originLocation.distanceTo(location);
+            }
             originLocation = location;
             setCameraLocation(location);
             LatLng coordinates = new LatLng(location.getLatitude(),location.getLongitude());
@@ -227,6 +234,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
                 if (distance < 25){
                     toRemove.add(pair.getKey());
                     Toast.makeText(getContext(), "Coin Collected", Toast.LENGTH_SHORT).show();
+                    cointot += 1;
                 }
             }
 
@@ -316,6 +324,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
             locationLayerPlugin.onStop();
         }
         saveCoinData();
+        saveUserData();
         mapView.onPause();
     }
 
@@ -325,6 +334,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView.onStop();
         saveCoinData();
         saveCollectData();
+        saveUserData();
         if(locationEngine != null){
             locationEngine.removeLocationEngineListener(this);
             locationEngine.removeLocationUpdates();
@@ -347,6 +357,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mapView.onDestroy();
         saveCoinData();
         saveCollectData();
+        saveUserData();
         if(locationEngine != null){
             locationEngine.removeLocationEngineListener(this);
             locationEngine.removeLocationUpdates();
@@ -521,6 +532,19 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         DocumentReference docRef = db.collection("collectData").document(currentUser);
         docRef.set(currentCollected);
         db = null;
+    }
+
+    private void saveUserData(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser().getUid();
+
+        DocumentReference docRef = db.collection("userData").document(currentUser);
+        Map<String, Object> newData = new HashMap<>();
+        newData.put("totalCoins", String.valueOf(cointot));
+        newData.put("totalDistance", dist);
+
+        docRef.update(newData);
     }
 
     public interface OnFragmentInteractionListener {

@@ -244,7 +244,7 @@ public class bank extends Fragment{
                 if (quidCollected.isEmpty()){
                     quidCollected = Arrays.asList("None");
                 }
-                ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
+                ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<>(getContext(), R.layout.simplerow, quidCollected);
                 collectedListQUID.setAdapter(arrayAdapterQUID);
                 arrayAdapterQUID.notifyDataSetChanged();
                 textMoney.setText(String.valueOf(money));

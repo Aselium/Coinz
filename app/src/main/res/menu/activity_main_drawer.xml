@@ -6,7 +6,7 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/Map"
-            android:icon="@drawable/ic_menu_map"
+            android:icon="@drawable/map"
             android:title="@string/map" />
         <item
             android:id="@+id/Bank"
@@ -18,8 +18,13 @@
             android:title="@string/coin_transfer" />
         <item
             android:id="@+id/Bank2"
-            android:icon="@drawable/ic_menu"
+            android:icon="@drawable/smile"
             android:title="@string/coinReceive"/>
+
+        <item
+            android:id="@+id/Statistics"
+            android:icon="@drawable/clap"
+            android:title="@string/stats"/>
     </group>
 
 </menu>

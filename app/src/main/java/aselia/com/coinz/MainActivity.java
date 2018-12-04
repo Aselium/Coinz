@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener, bank2.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, map.OnFragmentInteractionListener, bank.OnFragmentInteractionListener, coin.OnFragmentInteractionListener, bank2.OnFragmentInteractionListener, statistics.OnFragmentInteractionListener {
 
     Fragment fragment = null;
     private FirebaseAuth mAuth;
@@ -126,19 +126,18 @@ public class MainActivity extends AppCompatActivity
         if (mAuth.getCurrentUser() != null){
             if (id == R.id.Map) {
                 fragment = new map();
-                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             } else if (id == R.id.Bank) {
                 fragment = new bank();
-                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             } else if (id == R.id.Coin_Transfer) {
                 fragment = new coin();
-                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
             } else if (id == R.id.Bank2) {
                 fragment = new bank2();
-                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+            } else if (id == R.id.Statistics){
+                fragment = new statistics();
             }
 
             if (fragment != null) {
+                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction ft = fragmentManager.beginTransaction();
                 ft.replace(R.id.screen_area, fragment);
@@ -241,12 +240,15 @@ public class MainActivity extends AppCompatActivity
                             FirebaseUser user = mAuth.getCurrentUser();
                             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+                            //New user initialization
                             DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
                             Map<String,Object> userInfo = new HashMap<>();
                             userInfo.put("date","Thu Jan 01 1970");
                             userInfo.put("Money",0.0);
                             userInfo.put("Traded", 0);
                             userInfo.put("date2","Thu Jan 01 1970");
+                            userInfo.put("totalCoins", "0");
+                            userInfo.put("totalDistance", 0.0);
                             docRef.set(userInfo);
 
                             docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());
