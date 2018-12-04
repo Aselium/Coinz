@@ -3,27 +3,23 @@ package aselia.com.coinz;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,12 +38,6 @@ import java.util.Map;
  * create an instance of this fragment.
  */
 public class coin extends Fragment {
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    private String mParam1;
-    private String mParam2;
 
     private double money;
     private double dolrRate;
@@ -59,6 +49,7 @@ public class coin extends Fragment {
     private String currentEmail;
     private Map<String,Object> collectedCoins;
 
+    @Nullable
     List<String> dolrCollected= new ArrayList<>();
     List<String> penyCollected= new ArrayList<>();
     List<String> shilCollected= new ArrayList<>();
@@ -77,24 +68,20 @@ public class coin extends Fragment {
         // Required empty public constructor
     }
 
+    //Default Method
     public static coin newInstance(String param1, String param2) {
         coin fragment = new coin();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
-        jsonString = loadFile(getContext(),"data.geojson");
+        jsonString = loadFile();
         setRates(jsonString);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -102,26 +89,17 @@ public class coin extends Fragment {
         currentEmail = mAuth.getCurrentUser().getEmail();
 
         DocumentReference docRef = db.collection("userData").document(currentUser);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()){
-                        money = (double) document.getData().get("Money");
-                        if (document.getData().get("date2").equals(getDate(jsonString))){
-                            Map<String, Object> user = document.getData();
-                            TextView textMoney = getView().findViewById(R.id.textMoney);
-                            textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-                        } else {
-                            Map<String, Object> user = document.getData();
-                            TextView textMoney = getView().findViewById(R.id.textMoney);
-                            textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-                        }
-                    }
-                } else {
-                    Log.d("LoadUserData", "get failed with ", task.getException());
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()){
+                    money = (double) document.getData().get("Money");
+                    String moneyText = "Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8));
+                    TextView textMoney = getView().findViewById(R.id.textMoney);
+                    textMoney.setText(moneyText);
                 }
+            } else {
+                Log.d("LoadUserData", "get failed with ", task.getException());
             }
         });
     }
@@ -149,86 +127,65 @@ public class coin extends Fragment {
         textSHIL.setText("SHIL: " + Double.toString(shilRate).substring(0, Math.min(Double.toString(shilRate).length(), 8)));
         textQUID.setText("QUID: " + Double.toString(quidRate).substring(0, Math.min(Double.toString(quidRate).length(), 8)));
 
-        EditText emailText = (EditText) view.findViewById(R.id.toSend);
+        EditText emailText = view.findViewById(R.id.toSend);
 
         loadCollectData();
 
-        collectedListDOLR.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == "" || selected == "None" || !(isNumeric(selected))){
-                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+        collectedListDOLR.setOnItemClickListener((parent, view1, position, id) -> {
+            String selected = parent.getItemAtPosition(position).toString().trim();
+            if (selected.equals("") || selected.equals("None") || !(isNumeric(selected))){
+                Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("entered", "onItemC");
+                if (emailText.getText().toString().equals("")){
+                    Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.d("entered", "onItemC");
-                    if (emailText.getText().toString().equals("")){
-                        Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
-                    } else {
-                        sendCoin(emailText.getText().toString(),"DOLR",selected,position);
-                    }
+                    sendCoin(emailText.getText().toString(),"DOLR",selected,position);
                 }
             }
         });
 
-        collectedListPENY.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == "" || selected == "None" || !(isNumeric(selected))){
-                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+        collectedListPENY.setOnItemClickListener((parent, view12, position, id) -> {
+            String selected = parent.getItemAtPosition(position).toString().trim();
+            if (selected.equals("") || selected.equals("None") || !(isNumeric(selected))){
+                Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("entered", "onItemC");
+                if (emailText.getText().toString().equals("")){
+                    Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.d("entered", "onItemC");
-                    if (emailText.getText().toString().equals("")){
-                        Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
-                    } else {
-                        sendCoin(emailText.getText().toString(),"PENY",selected,position);
-                    }
+                    sendCoin(emailText.getText().toString(),"PENY",selected,position);
                 }
             }
         });
 
-        collectedListSHIL.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == "" || selected == "None" || !(isNumeric(selected))){
-                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+        collectedListSHIL.setOnItemClickListener((parent, view13, position, id) -> {
+            String selected = parent.getItemAtPosition(position).toString().trim();
+            if (selected.equals("") || selected.equals("None") || !(isNumeric(selected))){
+                Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("entered", "onItemC");
+                if (emailText.getText().toString().equals("")){
+                    Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.d("entered", "onItemC");
-                    if (emailText.getText().toString().equals("")){
-                        Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
-                    } else {
-                        sendCoin(emailText.getText().toString(),"SHIL",selected,position);
-                    }
+                    sendCoin(emailText.getText().toString(),"SHIL",selected,position);
                 }
             }
         });
 
-        collectedListQUID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString().trim();
-                if (selected == "" || selected == "None" || !(isNumeric(selected))){
-                    Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.d("entered", "onItemC");
-                    if (emailText.getText().toString().equals("")){
-                        Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
-                    } else {
-                        sendCoin(emailText.getText().toString(),"QUID",selected,position);
-                    }
-                }
+        collectedListQUID.setOnItemClickListener((parent, view14, position, id) -> {
+            String selected = parent.getItemAtPosition(position).toString().trim();
+            if (selected.equals("") || selected.equals("None") || !(isNumeric(selected))){
+                Toast.makeText(getContext(), "No coin of this currency exists", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("entered", "onItemC");
+                if ("".equals(emailText.getText().toString())){
+                    Toast.makeText(getContext(), "Please enter a valid E-mail", Toast.LENGTH_SHORT).show();
+                } else sendCoin(emailText.getText().toString(), "QUID", selected, position);
             }
         });
 
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -254,20 +211,18 @@ public class coin extends Fragment {
         saveData();
     }
 
-    private String loadFile(Context context, String filename) {
-
+    @SuppressWarnings("ConstantConditions")
+    private String loadFile() {
         String output = "";
 
         try {
-            InputStream inputStream = getContext().openFileInput(filename);
+            InputStream inputStream = getContext().openFileInput("data.geojson");
             int size = inputStream.available();
             byte[] buffer = new byte[size];
             inputStream.read(buffer);
             inputStream.close();
 
             output = new String(buffer);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -280,7 +235,7 @@ public class coin extends Fragment {
         int dateIndex = jsonString.indexOf("date-generated") + 18;
         boolean check = false;
         int counter = 0;
-        while (check == false){
+        while (!check){
             date += jsonString.charAt(dateIndex+counter);
             counter += 1;
             if (jsonString.charAt(dateIndex+counter) == '"'){
@@ -301,7 +256,7 @@ public class coin extends Fragment {
             boolean check = false;
             int counter = 0;
             String rateS = "";
-            while (check == false){
+            while (!check){
                 rateS += jsonString.charAt(Indexs[i] + counter);
                 counter += 1;
                 if (jsonString.charAt(Indexs[i] + counter) == '"'){
@@ -315,22 +270,23 @@ public class coin extends Fragment {
                 penyRate = Double.valueOf(rateS);
             } else if (i == 2){
                 quidRate = Double.valueOf(rateS);
-            } else if (i == 3){
+            } else {
                 shilRate = Double.valueOf(rateS);
             }
         }
     }
 
-    private List<List<String>> populateList(){
+    @SuppressWarnings("ConstantConditions")
+    private void populateList(){
         ListView collectedListDOLR = getView().findViewById(R.id.coinboxDOLR);
         ListView collectedListPENY = getView().findViewById(R.id.coinboxPENY);
         ListView collectedListSHIL = getView().findViewById(R.id.coinboxSHIL);
         ListView collectedListQUID = getView().findViewById(R.id.coinboxQUID);
 
-        List<String> dolrCollected = new ArrayList<>();
-        List<String> penyCollected = new ArrayList<>();
-        List<String> shilCollected = new ArrayList<>();
-        List<String> quidCollected = new ArrayList<>();
+        List<String> dolrCollected;
+        List<String> penyCollected;
+        List<String> shilCollected;
+        List<String> quidCollected;
 
         String[] currencies = new String[]{"DOLR","PENY","SHIL","QUID"};
 
@@ -346,32 +302,25 @@ public class coin extends Fragment {
 
             if (i == 0){
                 dolrCollected = new ArrayList<>(Arrays.asList(split));
-                ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
+                ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<>(getContext(), R.layout.simplerow, dolrCollected);
                 collectedListDOLR.setAdapter(arrayAdapterDOLR);
             } else if (i == 1){
                 penyCollected = new ArrayList<>(Arrays.asList(split));
-                ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow, penyCollected);
+                ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<>(getContext(), R.layout.simplerow, penyCollected);
                 collectedListPENY.setAdapter(arrayAdapterPENY);
             } else if (i == 2){
                 shilCollected = new ArrayList<>(Arrays.asList(split));
-                ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow, shilCollected);
+                ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<>(getContext(), R.layout.simplerow, shilCollected);
                 collectedListSHIL.setAdapter(arrayAdapterSHIL);
             } else if (i == 3){
                 quidCollected = new ArrayList<>(Arrays.asList(split));
-                ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow, quidCollected);
+                ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<>(getContext(), R.layout.simplerow, quidCollected);
                 collectedListQUID.setAdapter(arrayAdapterQUID);
             }
         }
-
-        List<List<String>> result = new ArrayList<>();
-        result.add(dolrCollected);
-        result.add(penyCollected);
-        result.add(shilCollected);
-        result.add(quidCollected);
-
-        return result;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private List<List<String>> getCollected(){
         List<String> dolrCollectedt = new ArrayList<>();
         List<String> penyCollectedt = new ArrayList<>();
@@ -410,41 +359,40 @@ public class coin extends Fragment {
         return result;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void loadCollectData(){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("collectData").document(currentUser);
 
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()){
-                        collectedCoins = new HashMap<>();
-                        collectedCoins = document.getData();
-                        TextView textMoney = getView().findViewById(R.id.textMoney);
-                        textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-                    }
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()){
+                    collectedCoins = new HashMap<>();
+                    collectedCoins = document.getData();
+                    TextView textMoney = getView().findViewById(R.id.textMoney);
+                    textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
                 }
-                populateList();
-                List<List<String>> temp = getCollected();
-                dolrCollected = temp.get(0);
-                penyCollected = temp.get(1);
-                shilCollected = temp.get(2);
-                quidCollected = temp.get(3);
             }
+            populateList();
+            List<List<String>> temp = getCollected();
+            dolrCollected = temp.get(0);
+            penyCollected = temp.get(1);
+            shilCollected = temp.get(2);
+            quidCollected = temp.get(3);
         });
         db = null;
     }
 
     private Map<String, Object> packUserdata(){
         Map<String, Object> result = new HashMap<>();
-        result.put("Money", Double.valueOf(money));
+        result.put("Money", money);
         result.put("date2", getDate(jsonString));
 
         return result;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private Map<String, Object> packCollecteddata(){
         Map<String, Object> result = new HashMap<>();
 
@@ -514,6 +462,7 @@ public class coin extends Fragment {
         return str.matches("-?\\d+(\\.\\d+)?");
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void sendCoin(String email, String coin, String value, int position){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("receiveData").document(email);
@@ -530,83 +479,75 @@ public class coin extends Fragment {
         quidCollected = temp.get(3);
 
 
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()){
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()){
 
-                        String postBoxStr;
-                        Map<String, Object> postBox;
-                        postBox = document.getData();
+                    String postBoxStr;
+                    Map<String, Object> postBox;
+                    postBox = document.getData();
 
-                        Map<String, Object> gift = new HashMap<>();
+                    Map<String, Object> gift = new HashMap<>();
 
-                        if (postBox.get(coin) == null){
-                            postBoxStr = value;
-                        } else if (postBox.get(coin) == "" || postBox.get(coin) == "None" || !(isNumeric((String) postBox.get(coin)))){
-                            postBoxStr = value;
-                        } else {
-                            postBoxStr = postBox.get(coin) + "," + value;
-                        }
-                        gift.put(coin, postBoxStr);
-                        docRef.update(gift);
+                    if (postBox.get(coin) == null){
+                        postBoxStr = value;
+                    } else if (postBox.get(coin) == "" || postBox.get(coin) == "None" || !(isNumeric((String) postBox.get(coin)))){
+                        postBoxStr = value;
+                    } else {
+                        postBoxStr = postBox.get(coin) + "," + value;
+                    }
+                    gift.put(coin, postBoxStr);
+                    docRef.update(gift);
 
-                        if (coin.equals("DOLR")){
+                    switch (coin) {
+                        case "DOLR":
                             dolrCollected.remove(position);
-                            if (dolrCollected.isEmpty()){
-                                dolrCollected = Arrays.asList(new String[]{"None"});
+                            if (dolrCollected.isEmpty()) {
+                                dolrCollected = Arrays.asList("None");
                             }
-                            ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<String>(getContext(),R.layout.simplerow,dolrCollected);
+                            ArrayAdapter<String> arrayAdapterDOLR = new ArrayAdapter<>(getContext(), R.layout.simplerow, dolrCollected);
                             collectedListDOLR.setAdapter(arrayAdapterDOLR);
                             arrayAdapterDOLR.notifyDataSetChanged();
-                        } else if (coin.equals("PENY")){
+                            break;
+                        case "PENY":
                             penyCollected.remove(position);
-                            if (penyCollected.isEmpty()){
-                                penyCollected = Arrays.asList(new String[]{"None"});
+                            if (penyCollected.isEmpty()) {
+                                penyCollected = Arrays.asList("None");
                             }
-                            ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<String>(getContext(),R.layout.simplerow,penyCollected);
+                            ArrayAdapter<String> arrayAdapterPENY = new ArrayAdapter<>(getContext(), R.layout.simplerow, penyCollected);
                             collectedListPENY.setAdapter(arrayAdapterPENY);
                             arrayAdapterPENY.notifyDataSetChanged();
-                        } else if (coin.equals("SHIL")){
+                            break;
+                        case "SHIL":
                             shilCollected.remove(position);
-                            if (shilCollected.isEmpty()){
-                                shilCollected = Arrays.asList(new String[]{"None"});
+                            if (shilCollected.isEmpty()) {
+                                shilCollected = Arrays.asList("None");
                             }
-                            ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
+                            ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<>(getContext(), R.layout.simplerow, shilCollected);
                             collectedListSHIL.setAdapter(arrayAdapterSHIL);
                             arrayAdapterSHIL.notifyDataSetChanged();
-                        } else if (coin.equals("QUID")){
+                            break;
+                        case "QUID":
                             quidCollected.remove(position);
-                            if (quidCollected.isEmpty()){
-                                quidCollected = Arrays.asList(new String[]{"None"});
+                            if (quidCollected.isEmpty()) {
+                                quidCollected = Arrays.asList("None");
                             }
-                            ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<String>(getContext(),R.layout.simplerow,quidCollected);
+                            ArrayAdapter<String> arrayAdapterQUID = new ArrayAdapter<>(getContext(), R.layout.simplerow, quidCollected);
                             collectedListQUID.setAdapter(arrayAdapterQUID);
                             arrayAdapterQUID.notifyDataSetChanged();
-                        }
-
-                        updateCollectedCoins();
-
-                    } else {
-                        Toast.makeText(getContext(),"User doesn't exist",Toast.LENGTH_SHORT).show();
+                            break;
                     }
+
+                    updateCollectedCoins();
+
+                } else {
+                    Toast.makeText(getContext(),"User doesn't exist",Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
