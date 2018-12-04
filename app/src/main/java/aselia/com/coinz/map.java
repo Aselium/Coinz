@@ -133,7 +133,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
 
         enableLocation();
 
-        jsonString = loadFile(getContext(),"data.geojson");
+        jsonString = loadFile("data.geojson");
         featureCollection = FeatureCollection.fromJson(jsonString);
         features = featureCollection.features();
 
@@ -395,7 +395,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         mListener = null;
     }
 
-    private String loadFile(Context context, String filename) {
+    private String loadFile(String filename) {
 
         String output = "";
 
@@ -422,7 +422,7 @@ public class map extends Fragment implements OnMapReadyCallback, LocationEngineL
         int dateIndex = jsonString.indexOf("date-generated") + 18;
         boolean check = false;
         int counter = 0;
-        while (check == false){
+        while (!check){
             date += jsonString.charAt(dateIndex+counter);
             counter += 1;
             if (jsonString.charAt(dateIndex+counter) == '"'){
