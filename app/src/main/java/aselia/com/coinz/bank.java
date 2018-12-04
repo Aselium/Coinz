@@ -3,7 +3,6 @@ package aselia.com.coinz;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,8 +15,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -91,33 +88,30 @@ public class bank extends Fragment{
         currentUser = mAuth.getCurrentUser().getUid();
 
         DocumentReference docRef = db.collection("userData").document(currentUser);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()){
-                    DocumentSnapshot document = task.getResult();
-                    String moneyText = "Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8));
-                    String tradedText = "Coins Traded Today: " + Integer.toString(todaysCoins) + "/25";
-                    if (document.exists()){
-                        money = (double) document.getData().get("Money");
-                        if (document.getData().get("date2").equals(getDate(jsonString))){
-                            Map<String, Object> user = document.getData();
-                            todaysCoins = Integer.valueOf(user.get("Traded").toString());
-                            TextView textMoney = getView().findViewById(R.id.textMoney);
-                            TextView textTraded = getView().findViewById(R.id.textTraded);
-                            textMoney.setText(moneyText);
-                            textTraded.setText(tradedText);
-                        } else {
-                            todaysCoins = 0;
-                            TextView textMoney = getView().findViewById(R.id.textMoney);
-                            TextView textTraded = getView().findViewById(R.id.textTraded);
-                            textMoney.setText(moneyText);
-                            textTraded.setText(tradedText);
-                        }
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                DocumentSnapshot document = task.getResult();
+                String moneyText = "Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8));
+                String tradedText = "Coins Traded Today: " + Integer.toString(todaysCoins) + "/25";
+                if (document.exists()){
+                    money = (double) document.getData().get("Money");
+                    if (document.getData().get("date2").equals(getDate(jsonString))){
+                        Map<String, Object> user = document.getData();
+                        todaysCoins = Integer.valueOf(user.get("Traded").toString());
+                        TextView textMoney = getView().findViewById(R.id.textMoney);
+                        TextView textTraded = getView().findViewById(R.id.textTraded);
+                        textMoney.setText(moneyText);
+                        textTraded.setText(tradedText);
+                    } else {
+                        todaysCoins = 0;
+                        TextView textMoney = getView().findViewById(R.id.textMoney);
+                        TextView textTraded = getView().findViewById(R.id.textTraded);
+                        textMoney.setText(moneyText);
+                        textTraded.setText(tradedText);
                     }
-                } else {
-                    Log.d("LoadUserData", "get failed with ", task.getException());
                 }
+            } else {
+                Log.d("LoadUserData", "get failed with ", task.getException());
             }
         });
     }
@@ -222,7 +216,7 @@ public class bank extends Fragment{
                 if (shilCollected.isEmpty()){
                     shilCollected = Arrays.asList("None");
                 }
-                ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<String>(getContext(),R.layout.simplerow,shilCollected);
+                ArrayAdapter<String> arrayAdapterSHIL = new ArrayAdapter<>(getContext(), R.layout.simplerow, shilCollected);
                 collectedListSHIL.setAdapter(arrayAdapterSHIL);
                 arrayAdapterSHIL.notifyDataSetChanged();
                 textMoney.setText(String.valueOf(money));
@@ -264,7 +258,6 @@ public class bank extends Fragment{
         });
 
         textMoney.setText("Your Money: " + Double.toString(money).substring(0, Math.min(Double.toString(money).length(), 8)));
-        textTraded.setText("Coins Traded Today: " + Integer.toString(todaysCoins) + "/25");
 
         Button switchbtn = view.findViewById(R.id.switchtype);
         switchbtn.setVisibility(View.INVISIBLE);
@@ -476,7 +469,6 @@ public class bank extends Fragment{
     private Map<String, Object> packUserdata(){
         Map<String, Object> result = new HashMap<>();
         result.put("Money", money);
-        Log.i("todays", "tpda: " + todaysCoins);
         result.put("Traded", todaysCoins);
         result.put("date2", getDate(jsonString));
 
@@ -542,7 +534,6 @@ public class bank extends Fragment{
         Map<String,Object> collectData = packCollecteddata();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference docRef = db.collection("collectData").document(currentUser);
-        Log.i("Collectinfoagain","info: "+ collectData);
         docRef.update(collectData);
         docRef = db.collection("userData").document(currentUser);
         docRef.update(userData);

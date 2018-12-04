@@ -189,30 +189,27 @@ public class MainActivity extends AppCompatActivity
 
         if (password.length() > 5 && password != null && email != null){
             mAuth.signInWithEmailAndPassword(email,password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()){
-                                Log.d("UserLoggedIn", "LogUserWithEmail:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                fragment = new map();
-                                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-                                FragmentManager fragmentManager = getSupportFragmentManager();
-                                FragmentTransaction ft = fragmentManager.beginTransaction();
-                                ft.replace(R.id.screen_area, fragment);
-                                ft.commit();
-                                View view = getCurrentFocus();
-                                if (view != null) {
-                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                }
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()){
+                            Log.d("UserLoggedIn", "LogUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            fragment = new map();
+                            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            FragmentTransaction ft = fragmentManager.beginTransaction();
+                            ft.replace(R.id.screen_area, fragment);
+                            ft.commit();
+                            View view1 = getCurrentFocus();
+                            if (view1 != null) {
+                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.hideSoftInputFromWindow(view1.getWindowToken(), 0);
+                            }
+                        } else {
+                            Log.w("SignInFailed", "LogUserWithEmail:failure", task.getException());
+                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
+                                Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
                             } else {
-                                Log.w("SignInFailed", "LogUserWithEmail:failure", task.getException());
-                                if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
-                                    Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(getBaseContext(),"Authentication Failed", Toast.LENGTH_SHORT).show();
-                                }
+                                Toast.makeText(getBaseContext(),"Authentication Failed", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -238,56 +235,53 @@ public class MainActivity extends AppCompatActivity
 
         if (password.length() > 5 && password != null && email != null){
             mAuth.createUserWithEmailAndPassword(email,password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()){
-                                Log.d("UserCreated", "createUserWithEmail:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()){
+                            Log.d("UserCreated", "createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-                                DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
-                                Map<String,Object> userInfo = new HashMap<>();
-                                userInfo.put("date","Thu Jan 01 1970");
-                                userInfo.put("Money",0.0);
-                                userInfo.put("Traded", 0);
-                                userInfo.put("date2","Thu Jan 01 1970");
-                                docRef.set(userInfo);
+                            DocumentReference docRef = db.collection("userData").document(mAuth.getCurrentUser().getUid());
+                            Map<String,Object> userInfo = new HashMap<>();
+                            userInfo.put("date","Thu Jan 01 1970");
+                            userInfo.put("Money",0.0);
+                            userInfo.put("Traded", 0);
+                            userInfo.put("date2","Thu Jan 01 1970");
+                            docRef.set(userInfo);
 
-                                docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());
-                                Map<String, String> collectInfo = new HashMap<>();
-                                collectInfo.put("PENY",null);
-                                collectInfo.put("DOLR",null);
-                                collectInfo.put("SHIL",null);
-                                collectInfo.put("QUID",null);
-                                docRef.set(collectInfo);
+                            docRef = db.collection("collectData").document(mAuth.getCurrentUser().getUid());
+                            Map<String, String> collectInfo = new HashMap<>();
+                            collectInfo.put("PENY",null);
+                            collectInfo.put("DOLR",null);
+                            collectInfo.put("SHIL",null);
+                            collectInfo.put("QUID",null);
+                            docRef.set(collectInfo);
 
-                                docRef = db.collection("receiveData").document(mAuth.getCurrentUser().getEmail());
-                                Map<String, String> receiveInfo = new HashMap<>();
-                                receiveInfo.put("PENY",null);
-                                receiveInfo.put("DOLR",null);
-                                receiveInfo.put("SHIL",null);
-                                receiveInfo.put("QUID",null);
-                                docRef.set(receiveInfo);
+                            docRef = db.collection("receiveData").document(mAuth.getCurrentUser().getEmail());
+                            Map<String, String> receiveInfo = new HashMap<>();
+                            receiveInfo.put("PENY",null);
+                            receiveInfo.put("DOLR",null);
+                            receiveInfo.put("SHIL",null);
+                            receiveInfo.put("QUID",null);
+                            docRef.set(receiveInfo);
 
-                                fragment = new map();
-                                hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
-                                FragmentManager fragmentManager = getSupportFragmentManager();
-                                FragmentTransaction ft = fragmentManager.beginTransaction();
-                                ft.replace(R.id.screen_area, fragment);
-                                ft.commit();
-                                View view = getCurrentFocus();
-                                if (view != null) {
-                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                }
+                            fragment = new map();
+                            hideUI(loginButton,signUpButton,colourBox,loginText,emailedit,passwordedit);
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            FragmentTransaction ft = fragmentManager.beginTransaction();
+                            ft.replace(R.id.screen_area, fragment);
+                            ft.commit();
+                            View view1 = getCurrentFocus();
+                            if (view1 != null) {
+                                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.hideSoftInputFromWindow(view1.getWindowToken(), 0);
+                            }
+                        } else {
+                            Log.w("UserCreationFailed", "createUserWithEmail:failure", task.getException());
+                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
+                                Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
                             } else {
-                                Log.w("UserCreationFailed", "createUserWithEmail:failure", task.getException());
-                                if (task.getException() instanceof FirebaseAuthInvalidCredentialsException){
-                                    Toast.makeText(getBaseContext(),"Check your email is entered correctly", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(getBaseContext(),"Account creation failed", Toast.LENGTH_SHORT).show();
-                                }
+                                Toast.makeText(getBaseContext(),"Account creation failed", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
